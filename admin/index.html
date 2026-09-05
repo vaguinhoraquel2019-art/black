@@ -234,7 +234,7 @@
     <div class="card">
       <h2>Registrar venda</h2>
       <input class="input-venda" type="text" id="venda-nome" placeholder="Nome do cliente" autocomplete="off">
-      <input class="input-venda" type="text" id="venda-pix" placeholder="Pix da pessoa" autocomplete="off">
+      <input class="input-venda" type="text" id="venda-key" placeholder="Key vendida" autocomplete="off">
       <input class="input-venda" type="number" id="venda-valor" placeholder="Valor (R$)" min="0" step="0.01">
       <button class="btn-gerar" id="btn-registrar-venda">Registrar venda</button>
     </div>
@@ -371,11 +371,11 @@ async function carregaKeys() {
 /* ── Vendas ── */
 document.getElementById("btn-registrar-venda").addEventListener("click", async () => {
   const nome  = document.getElementById("venda-nome").value.trim();
-  const pix   = document.getElementById("venda-pix").value.trim();
+  const key   = document.getElementById("venda-key").value.trim();
   const valor = parseFloat(document.getElementById("venda-valor").value);
   const btn   = document.getElementById("btn-registrar-venda");
 
-  if (!nome || !pix || !valor || valor <= 0) {
+  if (!nome || !key || !valor || valor <= 0) {
     alert("Preencha todos os campos.");
     return;
   }
@@ -384,14 +384,9 @@ document.getElementById("btn-registrar-venda").addEventListener("click", async (
   btn.disabled = true;
 
   try {
-    await db.collection("vendas").add({
-      nome,
-      pix,
-      valor,
-      data: Date.now()
-    });
+    await db.collection("vendas").add({ nome, key, valor, data: Date.now() });
     document.getElementById("venda-nome").value  = "";
-    document.getElementById("venda-pix").value   = "";
+    document.getElementById("venda-key").value   = "";
     document.getElementById("venda-valor").value = "";
     carregaVendas();
   } catch(e) {
@@ -426,7 +421,7 @@ async function carregaVendas() {
     item.innerHTML = `
       <div class="venda-info">
         <span class="venda-nome">${d.nome}</span>
-        <span class="venda-pix">${d.pix}</span>
+        <span class="venda-pix">${d.key || d.pix || ""}</span>
         <span style="color:#555;font-size:0.7rem">${data}</span>
       </div>
       <span class="venda-valor">R$ ${d.valor.toFixed(2)}</span>
