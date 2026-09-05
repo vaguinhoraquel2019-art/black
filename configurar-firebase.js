@@ -130,9 +130,17 @@ async function entrar() {
     const dados = doc.data();
     const agora = Date.now();
 
-    if (dados.expira < agora) {
-      await db.collection("keys").doc(key).delete();
-      throw new Error("expirada");
+    // Se já foi usada antes, verifica expiração
+    if (dados.usada) {
+      if (dados.expira < agora) {
+        await db.collection("keys").doc(key).delete();
+        throw new Error("expirada");
+      }
+    } else {
+      // Primeiro uso — começa a contar agora
+      const expira = agora + dados.dias * 24 * 60 * 60 * 1000;
+      await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
+      dados.expira = expira;
     }
 
     // Salva no sessionStorage e vai para o site
@@ -422,7 +430,7 @@ document.getElementById("btn-gerar").addEventListener("click", async () => {
   const expira = Date.now() + diasSelecionado * 24 * 60 * 60 * 1000;
 
   try {
-    await db.collection("keys").doc(key).set({ expira, dias: diasSelecionado, criada: Date.now() });
+    await db.collection("keys").doc(key).set({ dias: diasSelecionado, criada: Date.now(), usada: false, expira: null });
     const campo  = document.getElementById("key-gerada");
     const copiar = document.getElementById("btn-copiar");
     campo.textContent = key;
@@ -461,13 +469,14 @@ async function carregaKeys() {
   for (const doc of snap.docs) {
     const d      = doc.data();
     const expira = new Date(d.expira);
-    const expirou = d.expira < agora;
+    const expirou = dados.usada && dados.expira < agora;
+    const status  = !dados.usada ? "Aguardando uso" : expirou ? "Expirada" : "Expira " + new Date(dados.expira).toLocaleDateString("pt-BR");
 
     const item = document.createElement("div");
     item.className = "key-item";
     item.innerHTML = \`
       <span class="key-codigo" style="color:\${expirou ? '#555' : '#ccc'}">\${doc.id}</span>
-      <span class="key-expira">\${expirou ? "Expirada" : "Expira " + expira.toLocaleDateString("pt-BR")}</span>
+      <span class="key-expira">\${status}</span>
       <button class="btn-deletar" data-key="\${doc.id}" title="Deletar">✕</button>
     \`;
     lista.append(item);
