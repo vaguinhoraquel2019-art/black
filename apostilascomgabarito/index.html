@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaiHub</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="https://media.discordapp.net/attachments/1423331294770888777/1536905588188127232/image.png?ex=6a7d1a5e&amp;is=6a7bc8de&amp;hm=31ebf5872f32e49f4b4c10fedd2dc6f7ed17d9c3858844c0b4d389fa6ef8131b&amp;=&amp;format=webp&amp;quality=lossless">
+<link href="css/index.css" rel="stylesheet">
+<script src="js/index.js"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']}}}}</script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="particleCanvas"></canvas>
+
+<div class="content-wrapper">
+<nav id="navbar" class="glass-nav">
+<div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+<a href="#" class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-black text-sm text-black">K</div>
+<span class="font-extrabold text-lg tracking-tighter">Kai<span class="text-gray-400">Hub</span></span>
+</a>
+<a href="#apostilas" class="hidden md:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium px-4 py-2 rounded-lg border border-white/10 transition-all">Ver Apostilas</a>
+<button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors text-xl">▾</button>
+</div>
+<div id="mobileMenu" class="hidden md:hidden border-t border-white/5 px-4 py-3 bg-black/90 backdrop-blur-md">
+<a href="#apostilas" class="block text-sm text-gray-400 py-2 hover:text-white">Ver Apostilas</a>
+</div>
+</nav>
+
+<section class="pt-28 pb-12 px-4 relative overflow-hidden">
+<div class="max-w-6xl mx-auto relative text-center">
+<h1 class="text-4xl md:text-5xl font-black tracking-tighter leading-tight mb-4">Apostilas do Governo<br><span class="bg-gradient-to-r from-gray-100 to-gray-400 bg-clip-text text-transparent">100% Respondidas</span></h1>
+<p class="text-gray-400 max-w-md mb-8 text-sm leading-relaxed mx-auto">São Paulo em Ação, Ciências da Natureza e mais. Encontre a sua, baixe e confira as respostas de graça.</p>
+<div class="flex items-center justify-center gap-6 text-xs text-gray-500">
+<div><span class="text-white font-extrabold text-lg" id="totalCount">0</span> Apostilas</div>
+<div class="w-px h-4 bg-white/10"></div>
+<div><span class="text-white font-extrabold text-lg">Grátis</span> Download</div>
+</div>
+</div>
+</section>
+
+<section id="apostilas" class="py-8 relative">
+<div class="max-w-6xl mx-auto px-4 relative">
+<div class="flex flex-wrap justify-center gap-3 mb-10">
+<button onclick="selectTab('fundamental-II')" class="tab-btn active text-sm font-bold px-6 py-2.5 rounded-xl border border-white/10 text-gray-400 transition-all">Fundamental II</button>
+<button onclick="selectTab('sp-acao')" class="tab-btn text-sm font-bold px-6 py-2.5 rounded-xl border border-white/10 text-gray-400 transition-all">São Paulo em Ação</button>
+<button onclick="selectTab('medio')" class="tab-btn text-sm font-bold px-6 py-2.5 rounded-xl border border-white/10 text-gray-400 transition-all">Ensino Médio</button>
+</div>
+<div id="categoryContent"></div>
+</div>
+</section>
+
+<section class="py-16 relative">
+<div class="max-w-6xl mx-auto px-4">
+<div class="max-w-xs mx-auto">
+<div class="dev-card">
+<div class="flex items-center gap-3">
+<div class="relative flex-shrink-0">
+<img src="images/429c34b8f27c6b0fedb5809fcbb82ceb.png" alt="Plataform Destroyer Avatar" class="w-12 h-12 rounded-full bg-zinc-900 object-cover">
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#131316]"></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h3 class="text-sm font-bold text-white">Plataform Destroyer</h3>
+<span class="text-gray-500 text-xs font-medium">0</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="discord-badge">Developer</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<footer class="border-t border-white/5 py-8 bg-black/80 backdrop-blur-sm mt-0">
+<div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-2"><div class="w-6 h-6 rounded-md bg-white flex items-center justify-center font-black text-xs text-black">K</div><span class="font-extrabold text-sm tracking-tighter">Kai<span class="text-gray-400">Hub</span></span></div>
+<p class="text-xs text-gray-600">Material didático gratuito respondido.</p>
+</div>
+</footer>
+</div>
+
+<div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2"></div>
+
+<script>
+const canvas=document.getElementById('particleCanvas');const ctx=canvas.getContext('2d');let particlesArray;canvas.width=window.innerWidth;canvas.height=window.innerHeight;window.addEventListener('resize',function(){canvas.width=window.innerWidth;canvas.height=window.innerHeight});class Particle{constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.size=Math.random()*2+.5;this.speedY=Math.random()*.5+.1;this.speedX=(Math.random()-.5)*.2;this.opacity=Math.random()*.5+.1;this.color=`rgba(255, 255, 255, ${this.opacity})`}update(){this.y-=this.speedY;this.x+=this.speedX;if(this.y<-10){this.y=canvas.height+10;this.x=Math.random()*canvas.width}}draw(){ctx.fillStyle=this.color;ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fill()}}function initParticles(){particlesArray=[];let n=(canvas.width*canvas.height)/9000;if(n>100)n=100;for(let i=0;i<n;i++)particlesArray.push(new Particle())}function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);for(let i=0;i<particlesArray.length;i++){particlesArray[i].update();particlesArray[i].draw()}requestAnimationFrame(animateParticles)}initParticles();animateParticles();
+
+const apostilas=[
+{id:1,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"6º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/huiezcd5z4kvulq/6%25C2%25B0_ANO_-_HIS_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:2,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"6º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/mvck6raeu3fvbe5/6%25C2%25B0_ANO_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:3,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"6º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/ivn5ifwxwdk4dn5/%25286%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:4,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"6º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/2racs8sh2vhanga/%25286%25C2%25BAANO%2529_MAT_PORT_V2.pdf/file"},
+{id:5,nome:"3° Bimestre — His / Geo / LP",area:"humanas",serie:"6º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/6ano/geografia-historia.pdf"},
+{id:6,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"6º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/6ano/portugues-matematica.pdf"},
+{id:7,nome:"1° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"6º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/huiezcd5z4kvulq/6%25C2%25B0_ANO_-_HIS_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:8,nome:"2° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"6º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/ivn5ifwxwdk4dn5/%25286%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:9,nome:"3° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"6º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/6ano/ciencias-ingles-projeto-vida.pdf"},
+
+{id:10,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"7º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/b1781czl8t7lpno/7%25C2%25B0_ANO_-_CIE_HIS_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:11,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"7º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/gn5pmi5ntf0tz91/7%25C2%25B0_ANO_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:12,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"7º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/cw16z20yfep3qau/%25287%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:13,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"7º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/7kyiti0ociaatpe/%25287%25C2%25BAANO%2529_PORT_MAT_V2.pdf/file"},
+{id:14,nome:"3° Bimestre — His / Geo / LP",area:"humanas",serie:"7º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/7ano/geografia-historia.pdf"},
+{id:15,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"7º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/7ano/portugues-matematica.pdf"},
+{id:16,nome:"1° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"7º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/b1781czl8t7lpno/7%25C2%25B0_ANO_-_CIE_HIS_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:17,nome:"2° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"7º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/cw16z20yfep3qau/%25287%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:18,nome:"3° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"7º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/7ano/ciencias-ingles-projeto-vida.pdf"},
+
+{id:19,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"8º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/dit6sx0xawculzn/8%25C2%25B0_ANO_-_HIS_CIE_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:20,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"8º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/hh4fhmrt8y2hcnh/8%25C2%25B0_ANO_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:21,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"8º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/5qoaksdxfvp3392/%25288%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:22,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"8º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/dmmv4ogmpgi5625/%25288%25C2%25BAANO%2529_MAT_PORT_V2.pdf/file"},
+{id:23,nome:"3° Bimestre — His / Geo / LP",area:"humanas",serie:"8º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/8ano/geografia-historia.pdf"},
+{id:24,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"8º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/8ano/portugues-matematica.pdf"},
+{id:25,nome:"1° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"8º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/dit6sx0xawculzn/8%25C2%25B0_ANO_-_HIS_CIE_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:26,nome:"2° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"8º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/5qoaksdxfvp3392/%25288%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:27,nome:"3° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"8º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/8ano/ciencias-ingles-projeto-vida.pdf"},
+
+{id:28,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"9º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/c275koww461l44m/9%25C2%25B0_ANO_-_HIS_CIE_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:29,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"9º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/eji9zxfp8taeumq/9%25C2%25B0_ANO_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:30,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"9º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/64b0zv2rctajj3b/%25289%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:31,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"9º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/bsnro6brirjxfvo/%25289%25C2%25BAANO%2529_MAT_PORT_V2.pdf/file"},
+{id:32,nome:"3° Bimestre — His / Geo / LP",area:"humanas",serie:"9º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/9ano/geografia-historia.pdf"},
+{id:33,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"9º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/9ano/portugues-matematica.pdf"},
+{id:34,nome:"1° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"9º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/c275koww461l44m/9%25C2%25B0_ANO_-_HIS_CIE_GEO_LI_PV_-_PROF_VL1.pdf/file"},
+{id:35,nome:"2° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"9º Ano",nivel:"fundamental-II",link:"https://www.mediafire.com/file/64b0zv2rctajj3b/%25289%25C2%25BAANO%2529_HIS_CIE_GEO_ING_PV_V2.pdf/file"},
+{id:36,nome:"3° Bimestre — Cie / Ing / PV",area:"cie-ing-pv",serie:"9º Ano",nivel:"fundamental-II",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/9ano/ciencias-ingles-projeto-vida.pdf"},
+
+{id:37,nome:"Apostila 1 — Matemática",area:"sp-mat",serie:"Matemática",nivel:"sp-acao",link:"https://www.mediafire.com/file/4o87os4mr5j6uwu/%2528LIVRO_1%2529_-_S%25C3%2583O_PAULO_EM_A%25C3%2587%25C3%2583O_-_MATEM%25C3%2581TICA.pdf/file"},
+{id:38,nome:"Apostila 2 — Matemática",area:"sp-mat",serie:"Matemática",nivel:"sp-acao",link:"https://www.mediafire.com/file/2bglku4o9czvfls/%2528LIVRO_2%2529_-_S%25C3%2583O_PAULO_EM_A%25C3%2587%25C3%2583O_-_MATEM%25C3%2581TICA.pdf/file"},
+{id:39,nome:"Apostila 3 — Matemática",area:"sp-mat",serie:"Matemática",nivel:"sp-acao",link:"https://www.mediafire.com/file/9a6bgcwl3yahnv3/%2528LIVRO_3%2529_-_S%25C3%2583O_PAULO_EM_A%25C3%2587%25C3%2583O_-_MATEM%25C3%2581TICA.pdf/file"},
+{id:40,nome:"Apostila 1 — Português",area:"sp-port",serie:"Português",nivel:"sp-acao",link:"https://www.mediafire.com/file/xgbzhx32e0w6j6z/%2528LIVRO_1%2529_-_S%25C3%2583O_PAULO_EM_A%25C3%2587%25C3%2583O_-_PORTUGU%25C3%258AS.pdf/file"},
+{id:41,nome:"Apostila 2 — Português",area:"sp-port",serie:"Português",nivel:"sp-acao",link:"https://www.mediafire.com/file/hav9xr907zz2h8c/%2528LIVRO_2%2529_-_S%25C3%2583O_PAULO_EM_A%25C3%2587%25C3%2583O_-_PORTUGU%25C3%258AS.pdf/file"},
+{id:42,nome:"Apostila 3 — Português",area:"sp-port",serie:"Português",nivel:"sp-acao",link:"https://www.mediafire.com/file/vrhjnlgkpl5leui/%2528LIVRO_3%2529_-_S%25C3%2583O_PAULO_EM_A%25C3%2587%25C3%2583O_-_PORTUGU%25C3%258AS.pdf/file"},
+
+{id:43,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"1ª Série",nivel:"medio",link:"https://www.mediafire.com/file/57y6jzixm28lmf4/1%25C2%25B0_S%25C3%2589RIE_-_HIS_GEO_LI_-_PROF_VL1.pdf/file"},
+{id:44,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"1ª Série",nivel:"medio",link:"https://www.mediafire.com/file/ucvlqurkln5j6dg/1%25C2%25B0_S%25C3%2589RIE_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:45,nome:"1° Bimestre — Fís / Qui / Bio",area:"fis-qui-bio",serie:"1ª Série",nivel:"medio",link:"https://www.mediafire.com/file/3zyhmp2nqz7jnb4/1%25C2%25B0_S%25C3%2589RIE_-_BIO_FIS_QUI_-_PROF_VL1.pdf/file"},
+{id:46,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"1ª Série",nivel:"medio",link:"https://www.mediafire.com/file/9mhn9iidstehz5l/%25281%25C2%25AASERIE%2529_HIST_GEO_ING_V2.pdf/file"},
+{id:47,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"1ª Série",nivel:"medio",link:"https://www.mediafire.com/file/bmtv0p0yiqt3244/%25281%25C2%25AASERIE%2529_MAT_PORT_V2.pdf/file"},
+{id:48,nome:"2° Bimestre — Fís / Qui / Bio",area:"fis-qui-bio",serie:"1ª Série",nivel:"medio",link:"https://www.mediafire.com/file/6xoepwtbshwya5t/%25281%25C2%25AASERIE%2529_FIS_QUI_BIO_V2.pdf/file"},
+{id:49,nome:"3° Bimestre — His / Geo / Ing",area:"humanas",serie:"1ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/1anoem/historia-geografia-ingles.pdf"},
+{id:50,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"1ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/1anoem/portugues-matematica.pdf"},
+{id:51,nome:"3° Bimestre — Fís / Qui / Bio",area:"fis-qui-bio",serie:"1ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/1anoem/biologia-fisica-quimica.pdf"},
+{id:52,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"2ª Série",nivel:"medio",link:"https://www.mediafire.com/file/57y6jzixm28lmf4/1%25C2%25B0_S%25C3%2589RIE_-_HIS_GEO_LI_-_PROF_VL1.pdf/file"},
+{id:53,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"2ª Série",nivel:"medio",link:"https://www.mediafire.com/file/ucvlqurkln5j6dg/1%25C2%25B0_S%25C3%2589RIE_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:54,nome:"1° Bimestre — Fís / Qui / Bio",area:"fis-qui-bio",serie:"2ª Série",nivel:"medio",link:"https://www.mediafire.com/file/3zyhmp2nqz7jnb4/1%25C2%25B0_S%25C3%2589RIE_-_BIO_FIS_QUI_-_PROF_VL1.pdf/file"},
+{id:55,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"2ª Série",nivel:"medio",link:"https://www.mediafire.com/file/aw5xcv4ap3z7auz/%25282%25C2%25AASERIE%2529_HIST_GEO_ING_V2.pdf/file"},
+{id:56,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"2ª Série",nivel:"medio",link:"https://www.mediafire.com/file/xnmoi1teoefc6dn/%25282%25C2%25AASERIE%2529_MAT_PORT_V2.pdf/file"},
+{id:57,nome:"2° Bimestre — Fís / Qui / Bio",area:"fis-qui-bio",serie:"2ª Série",nivel:"medio",link:"https://www.mediafire.com/file/p5dab2bctalyu5y/%25282%25C2%25AASERIE%2529_FIS_QUI_BIO_V2.pdf/file"},
+{id:58,nome:"3° Bimestre — His / Geo / LP",area:"humanas",serie:"2ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/2anoem/historia-geografia-ingles.pdf"},
+{id:59,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"2ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/2anoem/portugues-matematica.pdf"},
+{id:60,nome:"3° Bimestre — Fís / Qui / Bio",area:"fis-qui-bio",serie:"2ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/2anoem/biologia-fisica-quimica.pdf"},
+{id:61,nome:"1° Bimestre — His / Geo / LP",area:"humanas",serie:"3ª Série",nivel:"medio",link:"https://www.mediafire.com/file/ywqcx654us1gwjd/3%25C2%25B0_S%25C3%2589RIE_-_HIS_FIS_LI_-_PROF_VL1.pdf/file"},
+{id:62,nome:"1° Bimestre — Mat / LP",area:"mat-lp",serie:"3ª Série",nivel:"medio",link:"https://www.mediafire.com/file/y6dni0vqa7gnmr4/3%25C2%25B0_S%25C3%2589RIE_-_LP_MAT_-_PROF_VL1.pdf/file"},
+{id:63,nome:"2° Bimestre — His / Geo / LP",area:"humanas",serie:"3ª Série",nivel:"medio",link:"https://www.mediafire.com/file/280p87c5z2m7qk0/%25283%25C2%25AASERIE%2529_HIST_FIS_ING_V2.pdf/file"},
+{id:64,nome:"2° Bimestre — Mat / LP",area:"mat-lp",serie:"3ª Série",nivel:"medio",link:"https://www.mediafire.com/file/4eb53wq9o7hd8o4/%25283%25C2%25AASERIE%2529_MAT_PORT_V2.pdf/file"},
+{id:65,nome:"3° Bimestre — His / Geo / LP",area:"humanas",serie:"3ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/3anoem/historia-fisica-ingles.pdf"},
+{id:66,nome:"3° Bimestre — Mat / LP",area:"mat-lp",serie:"3ª Série",nivel:"medio",link:"https://pub-761ea6e47fa74db3a9b6ffc7656d8e73.r2.dev/OpenFuture/3bim/3anoem/portugues-matematica.pdf"}
+];
+
+var areaStyleMap={
+humanas:{text:"text-gray-300",label:"Humanas"},
+"mat-lp":{text:"text-gray-300",label:"Mat / LP"},
+"fis-qui-bio":{text:"text-gray-300",label:"Natureza"},
+"cie-ing-pv":{text:"text-gray-300",label:"Cie / Ing / PV"},
+"sp-mat":{text:"text-gray-300",label:"Matemática"},
+"sp-port":{text:"text-gray-300",label:"Português"}
+};
+
+window.addEventListener("scroll",function(){document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50)});
+
+function animateCount(id,target){var el=document.getElementById(id),cur=0,inc=target/40,tmr=setInterval(function(){cur+=inc;if(cur>=target){cur=target;clearInterval(tmr)}el.textContent=Math.floor(cur)},30)}
+
+function selectTab(nivel){document.querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active'));event.currentTarget.classList.add('active');renderCategory(nivel)}
+
+function renderCategory(nivel){
+    var ct=document.getElementById('categoryContent'),
+        fd=apostilas.filter(a=>a.nivel===nivel),
+        gp={};
+        
+    fd.forEach(a=>{
+        if(!gp[a.serie])gp[a.serie]=[];
+        gp[a.serie].push(a);
+    });
+    
+    var h='<div class="grid md:grid-cols-2 gap-6">';
+    
+    for(var s in gp){
+        var it=gp[s];
+        h+=`<div class="serie-card p-5">
+                <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/5">
+                    <h3 class="text-lg font-bold text-white">${s}</h3>
+                    <span class="text-xs font-bold text-gray-300 bg-white/5 px-3 py-1 rounded-md">${it.length} apostilas</span>
+                </div>
+                <div class="space-y-6">`;
+        
+        var volGroup = {};
+        it.forEach(a => {
+            var volName = a.nome.split(' — ')[0] || 'Geral';
+            if(!volGroup[volName]) volGroup[volName] = [];
+            volGroup[volName].push(a);
+        });
+
+        for(var v in volGroup){
+            var volItems = volGroup[v];
+            h+=`<div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-gray-300 bg-white/5 px-2.5 py-1 rounded border border-white/10">${v}</span>
+                        <div class="h-px bg-white/10 flex-grow"></div>
+                    </div>
+                    <div class="space-y-3">`;
+            
+            volItems.forEach(a => {
+                var st=areaStyleMap[a.area],
+                    p=a.nome.split(' — '),
+                    m=p[1]||'';
+                h+=`<div class="volume-item p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black ${st.text}">
+                                PDF
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-white leading-tight">${m}</div>
+                                <div class="text-[11px] text-gray-500 mt-0.5">${st.label}</div>
+                            </div>
+                        </div>
+                        <button onclick="baixarApostila(${a.id})" class="download-btn flex-shrink-0 flex items-center justify-center gap-2 text-xs font-bold py-2 px-4 rounded-lg w-full sm:w-auto">
+                            Baixar
+                        </button>
+                    </div>`;
+            });
+            h+=`</div></div>`;
+        }
+        h+=`</div></div>`;
+    }
+    h+='</div>';
+    ct.innerHTML=h;
+}
+
+function baixarApostila(id){var a=apostilas.find(x=>x.id===id);if(!a)return;var n=a.serie+" — "+a.nome;if(a.link==="#"){showToast('Link indisponível.',"warning");return}var l=document.createElement("a");l.href=a.link;l.target="_blank";document.body.appendChild(l);l.click();document.body.removeChild(l);showToast('Aba de "'+n+'" iniciado!',"success")}
+
+function showToast(msg,type){var c=document.getElementById("toastContainer"),t=document.createElement("div"),cl={success:"bg-white text-black",warning:"bg-amber-600 text-white",error:"bg-red-700 text-white"};t.className="toast flex items-center gap-3 "+(cl[type]||cl.success)+" px-4 py-3 rounded-lg shadow-2xl max-w-sm text-xs border border-black/10";t.innerHTML='<span class="leading-relaxed font-medium">'+msg+'</span>';c.appendChild(t);setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},3000)}
+
+function toggleMobileMenu(){document.getElementById("mobileMenu").classList.toggle("hidden")}
+
+window.onload=function(){renderCategory('fundamental-II');animateCount("totalCount",apostilas.length)};
+</script>
+
+
+</body></html>

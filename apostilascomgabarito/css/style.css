@@ -1,0 +1,24 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0f;font-family:'Inter',sans-serif;color:#fff;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative;min-height:100vh}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background:radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),radial-gradient(circle at 85% 90%, rgba(255, 255, 255, 0.03) 0%, transparent 45%);}
+.glass-nav{background:rgba(13,13,15,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s,border .3s}
+.glass-nav.scrolled{background:rgba(13,13,15,.95);border-bottom:1px solid rgba(255,255,255,.08)}
+.tab-btn{transition:all .2s ease;cursor:pointer}
+.tab-btn.active{background:#ffffff;color:#000000;border-color:transparent;box-shadow:0 4px 12px rgba(255,255,255,.1)}
+.toast{animation:slideUp .4s ease-out,fadeOut .4s ease-in 2.6s forwards}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.download-btn{background:#ffffff;color:#000000;transition:all .2s ease}
+.download-btn:hover{background:#e0e0e0;box-shadow:0 4px 12px rgba(255,255,255,.15)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#000}
+::-webkit-scrollbar-thumb{background:#2a2a2e;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#3a3a3e}
+.discord-badge{background:#ffffff;color:#000000;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;text-transform:uppercase}
+.content-wrapper{position:relative;z-index:1}
+.serie-card{background:#131316;border:1px solid rgba(255,255,255,.06);border-radius:1rem}
+.volume-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:0.75rem;transition:all .2s ease}
+.volume-item:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
+.dev-card{background:#131316;border:1px solid rgba(255,255,255,.06);border-radius:1rem;padding:1rem;backdrop-filter:blur(12px);box-shadow:0 10px 15px -3px rgba(0,0,0,.2);transition:all .2s ease}
+.dev-card:hover{border-color:rgba(255,255,255,.2);transform:translateY(-2px)}
+#particleCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
