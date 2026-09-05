@@ -132,13 +132,14 @@ async function entrar() {
 
     // Se já foi usada antes, verifica expiração
     if (dados.usada) {
-      if (dados.expira < agora) {
+      // lifetime nunca expira
+      if (dados.expira !== null && dados.expira < agora) {
         await db.collection("keys").doc(key).delete();
         throw new Error("expirada");
       }
     } else {
-      // Primeiro uso — começa a contar agora
-      const expira = agora + dados.dias * 24 * 60 * 60 * 1000;
+      // Primeiro uso — começa a contar agora (lifetime: expira fica null)
+      const expira = dados.dias === 0 ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
       await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
       dados.expira = expira;
     }

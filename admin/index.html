@@ -218,6 +218,7 @@
         <button class="btn-dia" data-dias="5">5 dias</button>
         <button class="btn-dia" data-dias="7">7 dias</button>
         <button class="btn-dia" data-dias="15">15 dias</button>
+        <button class="btn-dia" data-dias="0" style="grid-column:span 5;background:#1a1a1a;border-color:#444">♾ Lifetime</button>
       </div>
       <button class="btn-gerar" id="btn-gerar">Gerar key</button>
       <div class="key-gerada" id="key-gerada"></div>
@@ -294,7 +295,7 @@ for (const btn of document.querySelectorAll(".btn-dia")) {
 
 /* ── Gerar key ── */
 function geraCodigoKey(dias) {
-  const prefixos = { 1: "DIARIA", 3: "TRIO", 5: "CINCO", 7: "SEMANA", 15: "QUINZENA" };
+  const prefixos = { 0: "LIFETIME", 1: "DIARIA", 3: "TRIO", 5: "CINCO", 7: "SEMANA", 15: "QUINZENA" };
   const prefixo  = prefixos[dias] || "KEY";
   const rand     = Array.from(crypto.getRandomValues(new Uint8Array(12)))
     .map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
@@ -307,10 +308,10 @@ document.getElementById("btn-gerar").addEventListener("click", async () => {
   btn.disabled = true;
 
   const key    = geraCodigoKey(diasSelecionado);
-  const expira = Date.now() + diasSelecionado * 24 * 60 * 60 * 1000;
+  const expira = diasSelecionado === 0 ? null : Date.now() + diasSelecionado * 24 * 60 * 60 * 1000;
 
   try {
-    await db.collection("keys").doc(key).set({ expira, dias: diasSelecionado, criada: Date.now() });
+    await db.collection("keys").doc(key).set({ expira, dias: diasSelecionado, criada: Date.now(), usada: false });
     const campo  = document.getElementById("key-gerada");
     const copiar = document.getElementById("btn-copiar");
     campo.textContent = key;
@@ -347,15 +348,19 @@ async function carregaKeys() {
 
   lista.innerHTML = "";
   for (const doc of snap.docs) {
-    const d      = doc.data();
-    const expira = new Date(d.expira);
-    const expirou = d.expira < agora;
+    const d       = doc.data();
+    const isLife  = d.dias === 0 || d.expira === null;
+    const expirou = !isLife && d.expira < agora;
+    const status  = isLife ? "♾ Lifetime"
+                  : !d.usada ? "Aguardando uso"
+                  : expirou ? "Expirada"
+                  : "Expira " + new Date(d.expira).toLocaleDateString("pt-BR");
 
     const item = document.createElement("div");
     item.className = "key-item";
     item.innerHTML = `
       <span class="key-codigo" style="color:${expirou ? '#555' : '#ccc'}">${doc.id}</span>
-      <span class="key-expira">${expirou ? "Expirada" : "Expira " + expira.toLocaleDateString("pt-BR")}</span>
+      <span class="key-expira" style="color:${isLife ? '#0af' : expirou ? '#e55' : '#666'}">${status}</span>
       <button class="btn-deletar" data-key="${doc.id}" title="Deletar">✕</button>
     `;
     lista.append(item);
