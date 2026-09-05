@@ -58,12 +58,7 @@
       transition: background 0.2s;
     }
     button:hover { background: #ddd; }
-    .erro {
-      font-size: 0.8rem;
-      color: #e55;
-      text-align: center;
-      display: none;
-    }
+    .erro { font-size: 0.8rem; color: #e55; text-align: center; display: none; }
     .erro.ativo { display: block; }
   </style>
 </head>
@@ -99,27 +94,32 @@ async function entrar() {
     const doc = await db.collection("keys").doc(key).get();
     if (!doc.exists) throw new Error("inexistente");
 
-    const dados = doc.data();
-    const agora = Date.now();
-    const isLifetime = dados.dias === 0 || dados.expira === null;
+    const dados   = doc.data();
+    const agora   = Date.now();
+    const isLife  = dados.dias === 0 || dados.expira === null;
 
-    // Se já foi usada, verifica expiração (lifetime nunca expira)
     if (dados.usada) {
-      if (!isLifetime && dados.expira < agora) {
+      // key já foi usada — verifica se expirou (lifetime nunca expira)
+      if (!isLife && dados.expira < agora) {
         await db.collection("keys").doc(key).delete();
         throw new Error("expirada");
       }
     } else {
-      // Primeiro uso — começa a contar agora
-      const expira = isLifetime ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
-      await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
+      // primeiro uso — começa a contar agora
+      const expira = isLife ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
+      await db.collection("keys").doc(key).update({
+        usada: true,
+        expira: expira,
+        primeiroUso: agora
+      });
       dados.expira = expira;
     }
 
-    // Salva no sessionStorage e vai para o site
+    // guarda no sessionStorage e entra
     sessionStorage.setItem("ag:key", key);
-    sessionStorage.setItem("ag:expira", isLifetime ? "99999999999999" : dados.expira);
+    sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(dados.expira));
     window.location.href = "index.html";
+
   } catch (e) {
     erro.classList.add("ativo");
     btn.textContent = "Entrar";
