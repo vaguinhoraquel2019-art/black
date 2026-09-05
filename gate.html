@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ANTI GOVERNO — Acesso</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #fff;
+      padding: 1rem;
+    }
+    .card {
+      width: 100%;
+      max-width: 22rem;
+      background: #141414;
+      border: 1px solid #222;
+      border-radius: 1rem;
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    p  { font-size: 0.825rem; color: #666; }
+    input {
+      width: 100%;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 0.5rem;
+      padding: 0.85rem 1rem;
+      color: #fff;
+      font: inherit;
+      font-size: 0.9375rem;
+      outline: none;
+      letter-spacing: 0.05em;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #555; }
+    input::placeholder { color: #444; letter-spacing: 0; }
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 0.5rem;
+      font: inherit;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #ddd; }
+    .erro {
+      font-size: 0.8rem;
+      color: #e55;
+      text-align: center;
+      display: none;
+    }
+    .erro.ativo { display: block; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div>
+    <h1>ANTI GOVERNO</h1>
+    <p style="margin-top:0.4rem">Digite sua key de acesso para continuar.</p>
+  </div>
+  <input type="text" id="key" placeholder="DIARIA-xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+  <button id="btn">Entrar</button>
+  <p class="erro" id="erro">Key inválida ou expirada.</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+async function entrar() {
+  const key  = document.getElementById("key").value.trim().toUpperCase();
+  const erro = document.getElementById("erro");
+  const btn  = document.getElementById("btn");
+  erro.classList.remove("ativo");
+  if (!key) return;
+
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
+
+  try {
+    const doc = await db.collection("keys").doc(key).get();
+    if (!doc.exists) throw new Error("inexistente");
+
+    const dados = doc.data();
+    const agora = Date.now();
+
+    if (dados.expira < agora) {
+      await db.collection("keys").doc(key).delete();
+      throw new Error("expirada");
+    }
+
+    // Salva no sessionStorage e vai para o site
+    sessionStorage.setItem("ag:key", key);
+    sessionStorage.setItem("ag:expira", dados.expira);
+    window.location.href = "index.html";
+  } catch (e) {
+    erro.classList.add("ativo");
+    btn.textContent = "Entrar";
+    btn.disabled = false;
+  }
+}
+
+document.getElementById("btn").addEventListener("click", entrar);
+document.getElementById("key").addEventListener("keydown", e => {
+  if (e.key === "Enter") entrar();
+});
+</script>
+</body>
+</html>
