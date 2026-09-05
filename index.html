@@ -19,6 +19,32 @@
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/estilo.css">
 
+  <!-- Proteção: exige key válida -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script>
+    (async function() {
+      const key    = sessionStorage.getItem("ag:key");
+      const expira = parseInt(sessionStorage.getItem("ag:expira") || "0");
+      if (!key || Date.now() > expira) {
+        window.location.replace("gate.html");
+        return;
+      }
+      // Valida no Firebase também (evita manipulação do sessionStorage)
+      try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      } catch(e) {}
+      const db  = firebase.firestore();
+      const doc = await db.collection("keys").doc(key).get();
+      if (!doc.exists) {
+        sessionStorage.removeItem("ag:key");
+        sessionStorage.removeItem("ag:expira");
+        window.location.replace("gate.html");
+      }
+    })();
+  </script>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
