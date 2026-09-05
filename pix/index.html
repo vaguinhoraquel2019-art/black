@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pix · black</title>
+  <meta name="theme-color" content="#0a0a0a">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem 3rem;
+      background: #f0f0f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #111;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 26rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* card do nome */
+    .card-nome {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.1rem 1.4rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* card do formulário */
+    .card-form {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      background: #eeeef4;
+      border: none;
+      border-radius: 0.6rem;
+      padding: 0.85rem 1rem;
+      font: inherit;
+      font-size: 0.9375rem;
+      color: #111;
+      outline: none;
+      transition: background 0.2s;
+      resize: none;
+    }
+
+    input::placeholder, textarea::placeholder { color: #999; }
+    input:focus, textarea:focus { background: #e4e4ec; }
+
+    .campo-msg {
+      position: relative;
+    }
+
+    .campo-msg textarea {
+      min-height: 5.5rem;
+      padding-right: 3.5rem;
+    }
+
+    .contador {
+      position: absolute;
+      bottom: 0.6rem;
+      right: 0.75rem;
+      font-size: 0.7rem;
+      color: #aaa;
+    }
+
+    .campo-valor {
+      position: relative;
+    }
+
+    .campo-valor input {
+      padding-left: 2.5rem;
+    }
+
+    .prefixo-rs {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9375rem;
+      color: #999;
+      pointer-events: none;
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: #999;
+      text-align: right;
+      margin-top: -0.4rem;
+    }
+
+    .btn-continuar {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 0.6rem;
+      background: #111;
+      color: #fff;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 0.25rem;
+    }
+
+    .btn-continuar:hover { background: #222; }
+    .btn-continuar:active { transform: scale(0.98); }
+    .btn-continuar:disabled { background: #ccc; cursor: not-allowed; }
+
+    .rodape-form {
+      font-size: 0.72rem;
+      color: #aaa;
+      text-align: center;
+      margin-top: 0.25rem;
+    }
+
+    /* ── tela do QR ── */
+    .card-qr {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.75rem 1.4rem;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .card-qr.ativo { display: flex; }
+
+    .card-qr h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .card-qr p {
+      font-size: 0.85rem;
+      color: #666;
+      max-width: 22ch;
+    }
+
+    #canvas-qr {
+      border-radius: 0.5rem;
+      image-rendering: pixelated;
+    }
+
+    .copia-cola {
+      width: 100%;
+      background: #eeeef4;
+      border: none;
+      border-radius: 0.6rem;
+      padding: 0.75rem 1rem;
+      font: 0.78rem/1.4 "Courier New", monospace;
+      color: #333;
+      word-break: break-all;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .copia-cola:hover { background: #e4e4ec; }
+
+    .btn-copiar {
+      width: 100%;
+      padding: 0.9rem;
+      border: 1px solid #ddd;
+      border-radius: 0.6rem;
+      background: #fff;
+      color: #111;
+      font: inherit;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-copiar:hover { background: #f5f5f5; }
+
+    .btn-voltar {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.6rem;
+      background: transparent;
+      color: #999;
+      font: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .btn-voltar:hover { color: #555; }
+
+    .tag-valor {
+      display: inline-block;
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper" id="tela-form">
+  <div class="card-nome">black</div>
+
+  <div class="card-form">
+    <input type="text" id="nick" placeholder="Seu nick" maxlength="50" autocomplete="off">
+
+    <div class="campo-msg">
+      <textarea id="mensagem" placeholder="Mensagem (opcional)" maxlength="250"></textarea>
+      <span class="contador" id="contador">250</span>
+    </div>
+
+    <div class="campo-valor">
+      <span class="prefixo-rs">R$</span>
+      <input type="number" id="valor" placeholder="0,00" min="1" step="0.01">
+    </div>
+    <p class="hint">Valor mínimo: R$ 1,00</p>
+
+    <button class="btn-continuar" id="btn-continuar" onclick="avancar()">Continuar</button>
+
+    <p class="rodape-form">
+      Ao utilizar este serviço, você concorda com os termos de uso.
+    </p>
+  </div>
+</div>
+
+<div class="wrapper" id="tela-qr" style="display:none">
+  <div class="card-nome">black</div>
+
+  <div class="card-qr ativo">
+    <h2 id="qr-titulo">Pagamento via Pix</h2>
+    <span class="tag-valor" id="qr-valor"></span>
+    <p>Escaneie o QR code ou copie o código abaixo</p>
+    <canvas id="canvas-qr" width="200" height="200"></canvas>
+    <button class="copia-cola" id="copia-cola" onclick="copiar()" title="Clique para copiar"></button>
+    <button class="btn-copiar" onclick="copiar()">Copiar código Pix</button>
+    <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+  </div>
+</div>
+
+<script>
+/* ── Dados do recebedor ── */
+const CHAVE_PIX  = "235cfce6-add4-4c71-bbc2-c61f1575a8cd";
+const NOME_PIX   = "BLACK";
+const CIDADE_PIX = "SAO PAULO";
+
+/* ── Contador de mensagem ── */
+document.getElementById("mensagem").addEventListener("input", function () {
+  document.getElementById("contador").textContent = 250 - this.value.length;
+});
+
+/* ── Monta payload BR Code (EMV) ── */
+function crc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+    }
+  }
+  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, "0");
+}
+
+function campo(id, valor) {
+  const tam = valor.length.toString().padStart(2, "0");
+  return id + tam + valor;
+}
+
+function geraPixCopiaECola(chave, nome, cidade, valor, descricao) {
+  const valorStr = parseFloat(valor).toFixed(2);
+  const nomeStr  = nome.substring(0, 25).toUpperCase();
+  const cidadeStr = cidade.substring(0, 15).toUpperCase();
+  const descStr  = descricao ? descricao.substring(0, 72) : "";
+
+  const pixKey   = campo("01", chave);
+  const addInfo  = descStr ? campo("02", descStr) : "";
+  const merchant = campo("26", campo("00", "BR.GOV.BCB.PIX") + pixKey + addInfo);
+
+  let payload =
+    campo("00", "01") +
+    campo("01", "12") +
+    merchant +
+    campo("52", "0000") +
+    campo("53", "986") +
+    campo("54", valorStr) +
+    campo("58", "BR") +
+    campo("59", nomeStr) +
+    campo("60", cidadeStr) +
+    campo("62", campo("05", "***"));
+
+  payload += campo("63", crc16(payload + "6304"));
+  return payload;
+}
+
+/* ── QR Code (canvas manual) ── */
+function desenhaQR(canvas, texto) {
+  /* Usa a lib qrcode-generator via CDN */
+  const qr = qrcode(0, "M");
+  qr.addData(texto);
+  qr.generate();
+
+  const mod   = qr.getModuleCount();
+  const size  = canvas.width;
+  const cell  = Math.floor(size / (mod + 4));
+  const offset = Math.floor((size - cell * mod) / 2);
+
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = "#000";
+
+  for (let r = 0; r < mod; r++) {
+    for (let c = 0; c < mod; c++) {
+      if (qr.isDark(r, c)) {
+        ctx.fillRect(offset + c * cell, offset + r * cell, cell, cell);
+      }
+    }
+  }
+}
+
+/* ── Avançar ── */
+function avancar() {
+  const nick  = document.getElementById("nick").value.trim();
+  const msg   = document.getElementById("mensagem").value.trim();
+  const valor = parseFloat(document.getElementById("valor").value);
+
+  if (!nick) {
+    document.getElementById("nick").focus();
+    return;
+  }
+  if (!valor || valor < 1) {
+    document.getElementById("valor").focus();
+    return;
+  }
+
+  const descricao = msg || nick;
+  const pixCode   = geraPixCopiaECola(CHAVE_PIX, NOME_PIX, CIDADE_PIX, valor, descricao);
+
+  const valorFmt = valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  document.getElementById("qr-titulo").textContent = `Pix de ${nick}`;
+  document.getElementById("qr-valor").textContent  = valorFmt;
+  document.getElementById("copia-cola").textContent = pixCode;
+
+  const canvas = document.getElementById("canvas-qr");
+  desenhaQR(canvas, pixCode);
+
+  document.getElementById("tela-form").style.display = "none";
+  document.getElementById("tela-qr").style.display   = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ── Copiar ── */
+async function copiar() {
+  const codigo = document.getElementById("copia-cola").textContent;
+  const btn    = document.querySelector(".btn-copiar");
+  try {
+    await navigator.clipboard.writeText(codigo);
+    btn.textContent = "Copiado!";
+    setTimeout(() => btn.textContent = "Copiar código Pix", 2000);
+  } catch {
+    btn.textContent = "Copie manualmente";
+  }
+}
+
+/* ── Voltar ── */
+function voltar() {
+  document.getElementById("tela-qr").style.display   = "none";
+  document.getElementById("tela-form").style.display = "block";
+}
+
+/* ── Enter no valor avança ── */
+document.getElementById("valor").addEventListener("keydown", e => {
+  if (e.key === "Enter") avancar();
+});
+</script>
+
+<!-- qrcode-generator (MIT) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+</body>
+</html>
