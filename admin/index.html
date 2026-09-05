@@ -116,7 +116,35 @@
     }
     .vazio { color: #444; font-size: 0.875rem; text-align: center; padding: 1rem 0; }
 
-    /* login */
+    /* vendas */
+    .input-venda {
+      width: 100%;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 0.5rem;
+      padding: 0.85rem 1rem;
+      color: #fff;
+      font: inherit;
+      font-size: 0.9375rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-venda:focus { border-color: #555; }
+    .input-venda::placeholder { color: #444; }
+    .venda-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #1e1e1e;
+      font-size: 0.8125rem;
+    }
+    .venda-item:last-child { border-bottom: 0; }
+    .venda-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .venda-nome { color: #fff; font-weight: 600; }
+    .venda-pix  { color: #666; font-size: 0.75rem; font-family: monospace; }
+    .venda-valor { color: #0f0; font-weight: 700; white-space: nowrap; }
     #tela-login {
       min-height: 100svh;
       display: flex;
@@ -201,6 +229,21 @@
       <h2>Keys ativas</h2>
       <div id="lista-keys"><p class="vazio">Carregando...</p></div>
     </div>
+
+    <!-- Registrar venda -->
+    <div class="card">
+      <h2>Registrar venda</h2>
+      <input class="input-venda" type="text" id="venda-nome" placeholder="Nome do cliente" autocomplete="off">
+      <input class="input-venda" type="text" id="venda-pix" placeholder="Pix da pessoa" autocomplete="off">
+      <input class="input-venda" type="number" id="venda-valor" placeholder="Valor (R$)" min="0" step="0.01">
+      <button class="btn-gerar" id="btn-registrar-venda">Registrar venda</button>
+    </div>
+
+    <!-- Histórico de vendas -->
+    <div class="card">
+      <h2>Histórico de vendas</h2>
+      <div id="lista-vendas"><p class="vazio">Carregando...</p></div>
+    </div>
   </div>
 </div>
 
@@ -220,6 +263,7 @@ document.getElementById("btn-login").addEventListener("click", () => {
     document.getElementById("tela-login").style.display = "none";
     document.getElementById("tela-admin").style.display = "block";
     carregaKeys();
+    carregaVendas();
   } else {
     document.getElementById("erro-login").classList.add("ativo");
   }
@@ -317,6 +361,85 @@ async function carregaKeys() {
     });
   }
 }
+/* ── Vendas ── */
+document.getElementById("btn-registrar-venda").addEventListener("click", async () => {
+  const nome  = document.getElementById("venda-nome").value.trim();
+  const pix   = document.getElementById("venda-pix").value.trim();
+  const valor = parseFloat(document.getElementById("venda-valor").value);
+  const btn   = document.getElementById("btn-registrar-venda");
+
+  if (!nome || !pix || !valor || valor <= 0) {
+    alert("Preencha todos os campos.");
+    return;
+  }
+
+  btn.textContent = "Registrando...";
+  btn.disabled = true;
+
+  try {
+    await db.collection("vendas").add({
+      nome,
+      pix,
+      valor,
+      data: Date.now()
+    });
+    document.getElementById("venda-nome").value  = "";
+    document.getElementById("venda-pix").value   = "";
+    document.getElementById("venda-valor").value = "";
+    carregaVendas();
+  } catch(e) {
+    alert("Erro: " + e.message);
+  }
+
+  btn.textContent = "Registrar venda";
+  btn.disabled = false;
+});
+
+async function carregaVendas() {
+  const lista = document.getElementById("lista-vendas");
+  lista.innerHTML = "<p class='vazio'>Carregando...</p>";
+
+  const snap = await db.collection("vendas").orderBy("data", "desc").get();
+
+  if (snap.empty) {
+    lista.innerHTML = "<p class='vazio'>Nenhuma venda registrada.</p>";
+    return;
+  }
+
+  let totalGeral = 0;
+  lista.innerHTML = "";
+
+  for (const doc of snap.docs) {
+    const d    = doc.data();
+    const data = new Date(d.data).toLocaleDateString("pt-BR");
+    totalGeral += d.valor;
+
+    const item = document.createElement("div");
+    item.className = "venda-item";
+    item.innerHTML = `
+      <div class="venda-info">
+        <span class="venda-nome">${d.nome}</span>
+        <span class="venda-pix">${d.pix}</span>
+        <span style="color:#555;font-size:0.7rem">${data}</span>
+      </div>
+      <span class="venda-valor">R$ ${d.valor.toFixed(2)}</span>
+      <button class="btn-deletar" data-id="${doc.id}" title="Deletar">✕</button>
+    `;
+    lista.append(item);
+  }
+
+  // Total
+  const total = document.createElement("div");
+  total.style.cssText = "padding-top:0.75rem;border-top:1px solid #2a2a2a;display:flex;justify-content:space-between;font-size:0.875rem;font-weight:700;";
+  total.innerHTML = `<span style="color:#aaa">Total</span><span style="color:#0f0">R$ ${totalGeral.toFixed(2)}</span>`;
+  lista.append(total);
+
+  for (const btn of lista.querySelectorAll(".btn-deletar")) {
+    btn.addEventListener("click", async () => {
+      await db.collection("vendas").doc(btn.dataset.id).delete();
+      carregaVendas();
+    });
+  }
+}
+
 </script>
-</body>
-</html>
