@@ -244,6 +244,12 @@
       <h2>Histórico de vendas</h2>
       <div id="lista-vendas"><p class="vazio">Carregando...</p></div>
     </div>
+
+    <!-- Keys usadas -->
+    <div class="card">
+      <h2>Keys usadas</h2>
+      <div id="lista-keys-usadas"><p class="vazio">Carregando...</p></div>
+    </div>
   </div>
 </div>
 
@@ -264,6 +270,7 @@ document.getElementById("btn-login").addEventListener("click", () => {
     document.getElementById("tela-admin").style.display = "block";
     carregaKeys();
     carregaVendas();
+    carregaKeysUsadas();
   } else {
     document.getElementById("erro-login").classList.add("ativo");
   }
@@ -438,6 +445,47 @@ async function carregaVendas() {
     btn.addEventListener("click", async () => {
       await db.collection("vendas").doc(btn.dataset.id).delete();
       carregaVendas();
+    });
+  }
+}
+async function carregaKeysUsadas() {
+  const lista = document.getElementById("lista-keys-usadas");
+  lista.innerHTML = "<p class='vazio'>Carregando...</p>";
+
+  const snap  = await db.collection("keys").orderBy("primeiroUso", "desc").get();
+  const agora = Date.now();
+  const usadas = snap.docs.filter(d => d.data().usada);
+
+  if (usadas.length === 0) {
+    lista.innerHTML = "<p class='vazio'>Nenhuma key usada ainda.</p>";
+    return;
+  }
+
+  lista.innerHTML = "";
+  for (const doc of usadas) {
+    const d       = doc.data();
+    const expira  = new Date(d.expira).toLocaleDateString("pt-BR");
+    const uso     = new Date(d.primeiroUso).toLocaleDateString("pt-BR");
+    const expirou = d.expira < agora;
+
+    const item = document.createElement("div");
+    item.className = "key-item";
+    item.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:0.2rem;min-width:0">
+        <span class="key-codigo" style="color:${expirou ? '#555' : '#ccc'}">${doc.id}</span>
+        <span style="color:#555;font-size:0.7rem">Usado em ${uso}</span>
+      </div>
+      <span class="key-expira" style="color:${expirou ? '#e55' : '#666'}">${expirou ? "Expirada" : "Expira " + expira}</span>
+      <button class="btn-deletar" data-key="${doc.id}" title="Deletar">✕</button>
+    `;
+    lista.append(item);
+  }
+
+  for (const btn of lista.querySelectorAll(".btn-deletar")) {
+    btn.addEventListener("click", async () => {
+      await db.collection("keys").doc(btn.dataset.key).delete();
+      carregaKeys();
+      carregaKeysUsadas();
     });
   }
 }
