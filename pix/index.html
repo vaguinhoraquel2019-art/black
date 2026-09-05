@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Pix · black</title>
   <meta name="theme-color" content="#0a0a0a">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -356,20 +357,24 @@ function avancar() {
     return;
   }
 
-  const descricao = msg || nick;
-  const pixCode   = geraPixCopiaECola(CHAVE_PIX, NOME_PIX, CIDADE_PIX, valor, descricao);
+  try {
+    const descricao = msg || nick;
+    const pixCode   = geraPixCopiaECola(CHAVE_PIX, NOME_PIX, CIDADE_PIX, valor, descricao);
 
-  const valorFmt = valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  document.getElementById("qr-titulo").textContent = `Pix de ${nick}`;
-  document.getElementById("qr-valor").textContent  = valorFmt;
-  document.getElementById("copia-cola").textContent = pixCode;
+    const valorFmt = valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    document.getElementById("qr-titulo").textContent = `Pix de ${nick}`;
+    document.getElementById("qr-valor").textContent  = valorFmt;
+    document.getElementById("copia-cola").textContent = pixCode;
 
-  const canvas = document.getElementById("canvas-qr");
-  desenhaQR(canvas, pixCode);
+    const canvas = document.getElementById("canvas-qr");
+    desenhaQR(canvas, pixCode);
 
-  document.getElementById("tela-form").style.display = "none";
-  document.getElementById("tela-qr").style.display   = "block";
-  window.scrollTo({ top: 0, behavior: "smooth" });
+    document.getElementById("tela-form").style.display = "none";
+    document.getElementById("tela-qr").style.display   = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch(e) {
+    alert("Erro ao gerar o QR code: " + e.message);
+  }
 }
 
 /* ── Copiar ── */
@@ -396,9 +401,6 @@ document.getElementById("valor").addEventListener("keydown", e => {
   if (e.key === "Enter") avancar();
 });
 </script>
-
-<!-- qrcode-generator (MIT) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
 </body>
 </html>
