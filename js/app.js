@@ -243,7 +243,7 @@ desenha();
  * 3. COPIAR LINK DO PIXGG (seção Doar)
  * ------------------------------------------------------------------ */
 
-const LINK_PIX = "https://pixgg.com/rochwxs";
+const LINK_PIX = "https://vaguinhoraquel2019-art.github.io/black/pix/";
 
 document.getElementById("copiar-link")?.addEventListener("click", async (evento) => {
   const aviso = document.getElementById("aviso-copia");
