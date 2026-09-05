@@ -125,7 +125,7 @@ function montaCortina() {
       </button>
 
       <div class="topo-painel">
-        <img class="foto-lanyard" src="images/marca.webp" alt="" width="112" height="112" decoding="async" />
+        <img class="foto-lanyard" src="images/marca.png" alt="" width="112" height="112" decoding="async" />
         <p class="kicker">Doação para</p>
         <h2 id="painel-titulo">ANTI GOVERNO</h2>
         <p class="arroba">pixgg.com/rochwxs</p>
