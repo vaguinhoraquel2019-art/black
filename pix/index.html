@@ -240,7 +240,7 @@
     </div>
     <p class="hint">Valor mínimo: R$ 1,00</p>
 
-    <button class="btn-continuar" id="btn-continuar" onclick="avancar()">Continuar</button>
+    <button class="btn-continuar" id="btn-continuar">Continuar</button>
 
     <p class="rodape-form">
       Ao utilizar este serviço, você concorda com os termos de uso.
@@ -256,13 +256,15 @@
     <span class="tag-valor" id="qr-valor"></span>
     <p>Escaneie o QR code ou copie o código abaixo</p>
     <canvas id="canvas-qr" width="200" height="200"></canvas>
-    <button class="copia-cola" id="copia-cola" onclick="copiar()" title="Clique para copiar"></button>
-    <button class="btn-copiar" onclick="copiar()">Copiar código Pix</button>
-    <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+    <button class="copia-cola" id="copia-cola" title="Clique para copiar"></button>
+    <button class="btn-copiar" id="btn-copiar">Copiar código Pix</button>
+    <button class="btn-voltar" id="btn-voltar">← Voltar</button>
   </div>
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+
 /* ── Dados do recebedor ── */
 const CHAVE_PIX  = "235cfce6-add4-4c71-bbc2-c61f1575a8cd";
 const NOME_PIX   = "BLACK";
@@ -396,10 +398,16 @@ function voltar() {
   document.getElementById("tela-form").style.display = "block";
 }
 
-/* ── Enter no valor avança ── */
+/* ── Eventos ── */
+document.getElementById("btn-continuar").addEventListener("click", avancar);
+document.getElementById("btn-copiar").addEventListener("click", copiar);
+document.getElementById("copia-cola").addEventListener("click", copiar);
+document.getElementById("btn-voltar").addEventListener("click", voltar);
 document.getElementById("valor").addEventListener("keydown", e => {
   if (e.key === "Enter") avancar();
 });
+
+}); // fim DOMContentLoaded
 </script>
 
 </body>
