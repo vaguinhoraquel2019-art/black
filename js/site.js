@@ -1,24 +1,87 @@
-/* O que é igual nas três abas: o menu do celular, a cortina de doação que
-   abre ao entrar no site e a foto do Discord (Lanyard).
+/* ================================================================== *
+ * site.js — partes compartilhadas do site Black (página única)
+ *
+ * 1. Navegação por âncora — marca a aba ativa conforme a seção visível
+ * 2. Menu do celular
+ * 3. Cortina de doação
+ * 4. Foto do Discord via Lanyard
+ * ================================================================== */
 
-   A cortina é montada aqui em vez de ficar escrita nas três páginas — uma
-   cópia só, um lugar só para mexer. */
-
-const PIXGG = "https://pixgg.com/rochwxs";
+const PIXGG   = "https://pixgg.com/rochwxs";
 const AUTOR_ID = "1127070909027590235";
 
 /* ------------------------------------------------------------------ *
- * Menu do celular
+ * 1. NAVEGAÇÃO POR ÂNCORA
+ *
+ * Atualiza aria-current nas abas conforme a seção visível na tela,
+ * usando IntersectionObserver. Também fecha o menu ao clicar num link.
+ * ------------------------------------------------------------------ */
+
+const abaLinks = document.querySelectorAll(".aba-link");
+
+function marcaAba(secaoId) {
+  for (const link of abaLinks) {
+    const ativa = link.dataset.secao === secaoId;
+    if (ativa) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  }
+}
+
+/* Observa qual seção ocupa mais espaço na viewport */
+const secoes = document.querySelectorAll(".pagina-secao");
+
+const observer = new IntersectionObserver(
+  (entradas) => {
+    /* Pega a seção com maior intersecção visível */
+    let melhor = null;
+    let melhorRatio = 0;
+    for (const entrada of entradas) {
+      if (entrada.intersectionRatio > melhorRatio) {
+        melhorRatio = entrada.intersectionRatio;
+        melhor = entrada.target.id;
+      }
+    }
+    if (melhor) marcaAba(melhor);
+  },
+  { threshold: [0, 0.25, 0.5, 0.75, 1] }
+);
+
+for (const secao of secoes) observer.observe(secao);
+
+/* Ao clicar numa aba fecha o menu celular e marca imediatamente */
+for (const link of abaLinks) {
+  link.addEventListener("click", () => {
+    marcaAba(link.dataset.secao);
+    fechaMenu();
+  });
+}
+
+/* Marca a seção correta ao carregar a página (suporte a deep link) */
+function secaoDoHash() {
+  const hash = location.hash.replace("#", "");
+  const ids = [...secoes].map((s) => s.id);
+  return ids.includes(hash) ? hash : ids[0];
+}
+
+marcaAba(secaoDoHash());
+
+window.addEventListener("hashchange", () => marcaAba(secaoDoHash()));
+
+/* ------------------------------------------------------------------ *
+ * 2. MENU DO CELULAR
  * ------------------------------------------------------------------ */
 
 const botaoMenu = document.getElementById("abrir-menu");
-const menu = document.getElementById("menu-celular");
+const menu      = document.getElementById("menu-celular");
 
 function fechaMenu() {
   if (!menu || menu.hidden) return;
   menu.hidden = true;
-  botaoMenu.setAttribute("aria-expanded", "false");
-  botaoMenu.setAttribute("aria-label", "Abrir menu");
+  botaoMenu?.setAttribute("aria-expanded", "false");
+  botaoMenu?.setAttribute("aria-label", "Abrir menu");
 }
 
 botaoMenu?.addEventListener("click", () => {
@@ -30,16 +93,20 @@ botaoMenu?.addEventListener("click", () => {
 
 document.addEventListener("click", (evento) => {
   if (menu?.hidden) return;
-  if (!menu.contains(evento.target) && evento.target !== botaoMenu && !botaoMenu.contains(evento.target)) {
+  if (
+    !menu.contains(evento.target) &&
+    evento.target !== botaoMenu &&
+    !botaoMenu?.contains(evento.target)
+  ) {
     fechaMenu();
   }
 });
 
 /* ------------------------------------------------------------------ *
- * Cortina de doação
+ * 3. CORTINA DE DOAÇÃO
  *
- * Abre uma vez por visita (`sessionStorage`): trocar de aba recarrega a
- * página, e reabrir a cada clique seria pedir esmola na cara da pessoa.
+ * Abre uma vez por visita (sessionStorage). Links com href="#doar"
+ * também abrem a cortina ao ser clicados.
  * ------------------------------------------------------------------ */
 
 const CHAVE_VISITA = "black:cortina";
@@ -58,7 +125,7 @@ function montaCortina() {
       </button>
 
       <div class="topo-painel">
-        <img class="foto-lanyard" src="/img/marca.webp" alt="" width="112" height="112" decoding="async" />
+        <img class="foto-lanyard" src="images/marca.webp" alt="" width="112" height="112" decoding="async" />
         <p class="kicker">Doação para</p>
         <h2 id="painel-titulo">BLACK</h2>
         <p class="arroba">pixgg.com/rochwxs</p>
@@ -68,7 +135,7 @@ function montaCortina() {
       </div>
 
       <figure class="qr qr-painel">
-        <img src="/img/qr-pix.svg" alt="QR code que abre a página de doação pixgg.com/rochwxs"
+        <img src="images/qr-pix.png" alt="QR code que abre a página de doação pixgg.com/rochwxs"
              width="370" height="370" loading="lazy" decoding="async" />
         <figcaption>aponte a câmera</figcaption>
       </figure>
@@ -94,7 +161,7 @@ function montaCortina() {
   return cortina;
 }
 
-let cortina = null;
+let cortina      = null;
 let focoAnterior = null;
 
 function fechaCortina() {
@@ -105,7 +172,7 @@ function fechaCortina() {
 }
 
 function abreCortina() {
-  cortina ??= montaCortina();
+  cortina     ??= montaCortina();
   focoAnterior = document.activeElement;
   cortina.hidden = false;
   document.body.classList.add("travado");
@@ -142,12 +209,12 @@ if (!sessionStorage.getItem(CHAVE_VISITA)) {
   try {
     sessionStorage.setItem(CHAVE_VISITA, "1");
   } catch {
-    /* navegador com armazenamento bloqueado: abre mesmo assim, uma vez */
+    /* armazenamento bloqueado: abre mesmo assim */
   }
   abreCortina();
 }
 
-/* Quem quiser rever depois: qualquer link com href="#doar". */
+/* Links internos que apontam para #doar abrem a cortina */
 for (const gatilho of document.querySelectorAll('a[href="#doar"]')) {
   gatilho.addEventListener("click", (evento) => {
     evento.preventDefault();
@@ -156,10 +223,10 @@ for (const gatilho of document.querySelectorAll('a[href="#doar"]')) {
 }
 
 /* ------------------------------------------------------------------ *
- * Foto do Discord
+ * 4. FOTO DO DISCORD (Lanyard)
  *
- * Vale para a assinatura da lateral e para a cortina. Sem Lanyard, sem
- * rede ou fora do ar, fica o brasão da Black e ninguém vê erro nenhum.
+ * Atualiza todas as .foto-lanyard com o avatar real do Discord.
+ * Sem Lanyard ou fora do ar, fica o brasão.
  * ------------------------------------------------------------------ */
 
 async function carregaFoto() {
@@ -168,7 +235,7 @@ async function carregaFoto() {
 
   try {
     const resposta = await fetch(`https://api.lanyard.rest/v1/users/${AUTOR_ID}`);
-    const corpo = await resposta.json();
+    const corpo    = await resposta.json();
     if (!corpo.success) return;
 
     const perfil = corpo.data.discord_user;
@@ -178,6 +245,7 @@ async function carregaFoto() {
     const url = `https://cdn.discordapp.com/avatars/${perfil.id}/${perfil.avatar}.${
       animado ? "gif" : "png"
     }?size=256`;
+
     for (const foto of fotos) foto.src = url;
   } catch {
     /* fica o brasão */

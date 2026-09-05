@@ -1,50 +1,170 @@
-<!DOCTYPE html><html lang="pt-BR"><head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Doar · Black</title>
-    <meta name="description" content="Mande um pix para manter os bots, os scripts e as apostilas de graça.">
-    <meta name="theme-color" content="#0a0505">
-    <link rel="icon" href="/img/marca.webp" type="image/webp">
-    <link rel="apple-touch-icon" href="/img/marca.webp">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Black</title>
+  <meta name="description" content="Bot, script e as apostilas do Currículo Paulista. De graça, feito por quem usa.">
+  <meta name="theme-color" content="#0a0505">
+  <link rel="icon" href="images/marca.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="images/marca.webp">
 
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Doar · Black">
-    <meta property="og:description" content="Mande um pix para manter os bots, os scripts e as apostilas de graça.">
-    <meta property="og:image" content="/img/banner.webp">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Black">
+  <meta property="og:description" content="Bot, script e as apostilas do Currículo Paulista. De graça, feito por quem usa.">
+  <meta property="og:image" content="images/banner.webp">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link rel="stylesheet" href="css/index.css">
-    <link rel="stylesheet" href="css/estilo.css">
-  </head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
 
-  <body>
-    <header class="cabecalho">
-      <div class="limite">
-        <a class="marca" href="/" aria-label="Black — início">
-          <img src="images/marca.webp" alt="" width="36" height="36">
-          <span>Black</span>
-        </a>
+<body>
+  <header class="cabecalho">
+    <div class="limite">
+      <a class="marca" href="#inicio" aria-label="Black — início">
+        <img src="images/marca.webp" alt="" width="36" height="36">
+        <span>Black</span>
+      </a>
 
-        <nav class="abas" aria-label="Seções">
-          <a href="/">Início</a>
-          <a href="/apostilas">Apostilas</a>
-          <a href="/doar" aria-current="page">Doar</a>
-        </nav>
-
-        <button class="hamburguer" type="button" id="abrir-menu" aria-expanded="false" aria-controls="menu-celular" aria-label="Abrir menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-
-      <nav class="menu-celular" id="menu-celular" aria-label="Seções" hidden="">
-        <a href="/">Início</a>
-        <a href="/apostilas">Apostilas</a>
-        <a href="/doar" aria-current="page">Doar</a>
+      <nav class="abas" aria-label="Seções">
+        <a href="#inicio" class="aba-link" data-secao="inicio">Início</a>
+        <a href="#apostilas" class="aba-link" data-secao="apostilas">Apostilas</a>
+        <a href="#doar" class="aba-link" data-secao="doar">Doar</a>
       </nav>
-    </header>
 
-    <main>
+      <button class="hamburguer" type="button" id="abrir-menu" aria-expanded="false" aria-controls="menu-celular" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <nav class="menu-celular" id="menu-celular" aria-label="Seções" hidden>
+      <a href="#inicio" class="aba-link" data-secao="inicio">Início</a>
+      <a href="#apostilas" class="aba-link" data-secao="apostilas">Apostilas</a>
+      <a href="#doar" class="aba-link" data-secao="doar">Doar</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SEÇÃO 1 — INÍCIO
+    ════════════════════════════════════════════════════════════════ -->
+    <section id="inicio" class="pagina-secao">
+
+      <section class="capa capa-curta">
+        <div class="limite">
+          <div>
+            <p class="kicker">Servidor · bots · scripts</p>
+            <h1>Bot, script e apostila. <em>Tudo de graça.</em></h1>
+            <p class="texto">
+              A Black começou como um servidor de gente trocando bot e script que ninguém queria
+              vender caro. Continua assim: o que a gente faz sai de graça e fica de graça. Este site
+              é a parte que dá para usar sem entrar em lugar nenhum.
+            </p>
+            <p class="acoes">
+              <a class="botao" href="#apostilas" class="aba-link" data-secao="apostilas">
+                Ver as apostilas
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h13M13 6l6 6-6 6"></path>
+                </svg>
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cartão de convite, no formato do Discord -->
+      <section class="convite limite" id="convite" aria-labelledby="convite-titulo">
+        <p class="kicker">Você foi convidado para entrar em um servidor</p>
+
+        <div class="cartao-convite">
+          <img class="capa-convite" src="images/banner.webp" alt="Banner do servidor Black" width="1280" height="720" loading="lazy" decoding="async">
+
+          <div class="corpo-convite">
+            <img class="brasao" src="images/marca.webp" alt="" width="72" height="72">
+
+            <div class="sobre-servidor">
+              <h2 id="convite-titulo">black</h2>
+              <p class="descricao">f2u bots and scripts</p>
+              <p class="contagem" id="contagem-servidor">
+                <span class="ponto online" id="qtd-online">—</span>
+                <span class="ponto" id="qtd-membros">—</span>
+              </p>
+            </div>
+
+            <a class="botao-discord" href="https://discord.gg/zunder" target="_blank" rel="noopener noreferrer" aria-label="Entrar no servidor no Discord">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <path d="M19.6 5.3A16.3 16.3 0 0 0 15.5 4l-.5 1a15.2 15.2 0 0 0-5.9 0L8.6 4a16.5 16.5 0 0 0-4.1 1.3C1.9 9.2 1.2 13 1.5 16.8a16.6 16.6 0 0 0 5 2.5l1.2-1.7-1.9-.9.5-.4c3.7 1.7 7.7 1.7 11.4 0l.5.4-1.9.9 1.2 1.7a16.5 16.5 0 0 0 5-2.5c.4-4.4-.7-8.1-3-11.5ZM8.8 14.5c-1.1 0-2-1-2-2.2s.9-2.3 2-2.3 2 1 2 2.3-.9 2.2-2 2.2Zm6.5 0c-1.1 0-2-1-2-2.2s.9-2.3 2-2.3 2 1 2 2.3-.9 2.2-2 2.2Z"></path>
+              </svg>
+              Entrar no servidor
+            </a>
+          </div>
+        </div>
+
+        <p class="aviso-convite">discord.gg/zunder</p>
+      </section>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SEÇÃO 2 — APOSTILAS
+    ════════════════════════════════════════════════════════════════ -->
+    <section id="apostilas" class="pagina-secao">
+
+      <section class="capa">
+        <div class="limite">
+          <div>
+            <p class="kicker">Cadernos do aluno · Sala do Futuro</p>
+            <h1>As apostilas do ano inteiro, <em>em um lugar só.</em></h1>
+            <p class="texto">
+              Do 6º ano à 3ª série, bimestre a bimestre. Cada caderno abre no navegador, no próprio
+              acervo da Secretaria da Educação — sem baixar nada, sem cadastro, sem aplicativo no
+              meio.
+            </p>
+          </div>
+
+          <div class="arte">
+            <img src="images/banner.webp" alt="Black" width="1280" height="720" loading="lazy" decoding="async">
+          </div>
+        </div>
+      </section>
+
+      <section class="filtros" aria-label="Filtros">
+        <div class="limite">
+          <div class="grupo">
+            <p class="kicker" id="rot-bimestre">Bimestre</p>
+            <div role="radiogroup" aria-labelledby="rot-bimestre" id="filtro-bimestre"></div>
+          </div>
+
+          <div class="grupo">
+            <p class="kicker" id="rot-etapa">Etapa</p>
+            <div role="radiogroup" aria-labelledby="rot-etapa" id="filtro-etapa"></div>
+          </div>
+
+          <div class="busca">
+            <label class="kicker" for="busca">Buscar matéria</label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="m20 20-3.2-3.2" stroke-linecap="round"></path>
+            </svg>
+            <input id="busca" type="search" autocomplete="off" placeholder="matemática, inglês, 9º ano…">
+          </div>
+
+          <p class="so-leitor" role="status" aria-live="polite" id="aviso-resultado"></p>
+        </div>
+      </section>
+
+      <div class="limite" id="acervo"></div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SEÇÃO 3 — DOAR
+    ════════════════════════════════════════════════════════════════ -->
+    <section id="doar" class="pagina-secao">
+
       <section class="capa capa-curta">
         <div class="limite">
           <div>
@@ -60,9 +180,8 @@
 
       <section class="doacao limite" aria-labelledby="doacao-titulo">
         <div class="cartao-doacao">
-          <!-- QR de verdade: aponta para a mesma página do botão. -->
           <figure class="qr">
-            <img src="images/qr-pix.svg" alt="QR code que abre a página de doação pixgg.com/rochwxs" width="370" height="370" decoding="async">
+            <img src="images/qr-pix.png" alt="QR code que abre a página de doação pixgg.com/rochwxs" width="370" height="370" decoding="async">
             <figcaption>aponte a câmera</figcaption>
           </figure>
 
@@ -84,38 +203,35 @@
                   <path d="M7 17 17 7M9 7h8v8"></path>
                 </svg>
               </a>
-
               <button class="botao vazado" type="button" id="copiar-link">Copiar o link</button>
             </div>
 
             <p class="rodape-doacao" id="aviso-copia" role="status" aria-live="polite">
               pixgg.com/rochwxs
             </p>
-
           </div>
         </div>
       </section>
-    </main>
 
-    <footer class="rodape">
-      <div class="limite">
-        <p class="kicker">Black · 2026</p>
-      </div>
-    </footer>
+    </section>
 
-    <!-- Assinatura na lateral: foto redonda vinda da Lanyard e o crédito
-         embaixo. Não captura toque — passa por cima dos cards e um crédito
-         nunca pode roubar o clique de um link. -->
-    <div class="assina">
-      <img class="foto-lanyard" src="images/marca.webp" alt="" width="168" height="168" decoding="async">
-      <span class="nome">saints</span>
-      <span class="cargo-assina">co founder e developer</span>
+  </main>
+
+  <footer class="rodape">
+    <div class="limite">
+      <p class="kicker">Black · 2026</p>
     </div>
+  </footer>
 
+  <div class="assina">
+    <img class="foto-lanyard" src="images/marca.webp" alt="" width="168" height="168" decoding="async">
+    <span class="nome">saints</span>
+    <span class="cargo-assina">co founder e developer</span>
+  </div>
 
-    <script src="js/site.js"></script>
-    <script src="js/doar.js"></script>
-  
+  <script src="js/site.js"></script>
+  <script src="js/dados.js"></script>
+  <script src="js/app.js"></script>
 
-<script async="" src="js/index.js" data-nf-variant="public" data-netlify-site-id="c061437d-9a12-40be-9982-7a2110e4589f" data-app-host="app.netlify.com"></script>
-</body></html>
+</body>
+</html>

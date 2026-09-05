@@ -1,6 +1,5 @@
 /* ------------------------------------------------------------------ *
- * Apostilas — mesma linguagem visual do resto da Black: preto de
- * verdade, uma rampa de vermelho e nada mais. Sem verde, sem âmbar.
+ * Black — paleta preto e branco pura. Sem matiz, sem vermelho.
  *
  * Regra que vale aqui também: nada que custe por frame de rolagem —
  * sem filter: blur() em elemento grande, sem backdrop-filter em barra
@@ -8,18 +7,18 @@
  * ------------------------------------------------------------------ */
 
 :root {
-  --background: oklch(0.113 0.007 20);
-  --foreground: oklch(0.965 0.003 60);
-  --ink: oklch(0.072 0.007 20);
-  --surface: oklch(0.163 0.01 21);
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.97 0 0);
+  --ink: oklch(0.04 0 0);
+  --surface: oklch(0.14 0 0);
 
-  --primary-deep: oklch(0.335 0.148 24);
-  --primary: oklch(0.598 0.238 27);
-  --primary-bright: oklch(0.742 0.196 29);
+  --primary-deep: oklch(0.28 0 0);
+  --primary: oklch(0.55 0 0);
+  --primary-bright: oklch(0.82 0 0);
 
-  --muted: oklch(0.705 0.014 30);
-  --border: oklch(0.68 0.045 28 / 0.2);
-  --border-forte: oklch(0.7 0.075 28 / 0.34);
+  --muted: oklch(0.62 0 0);
+  --border: oklch(1 0 0 / 0.14);
+  --border-forte: oklch(1 0 0 / 0.28);
 
   --radius: 0.875rem;
   --sombra-suave: 0 1px 2px -1px oklch(0 0 0 / 0.6), 0 8px 24px -16px oklch(0 0 0 / 0.8);
@@ -813,19 +812,19 @@ a {
   min-height: 3rem;
   padding: 0 1.5rem;
   border-radius: 999px;
-  background: #5865f2;
-  color: #fff;
+  background: var(--foreground);
+  color: var(--ink);
   font-size: 0.9375rem;
   font-weight: 500;
   text-decoration: none;
-  box-shadow: 0 14px 32px -18px #5865f2;
+  box-shadow: 0 14px 32px -18px oklch(1 0 0 / 0.3);
   transition:
     background-color 0.3s ease,
     transform 0.3s var(--curva);
 }
 
 .botao-discord:hover {
-  background: #4752c4;
+  background: var(--primary-bright);
   transform: translateY(-2px);
 }
 
@@ -1409,3 +1408,14 @@ body.travado .assina {
   margin-top: 1.1rem;
 }
 
+
+/* ---------------------------------- página única (seções por âncora) */
+
+.pagina-secao {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4rem;
+}
+
+.pagina-secao:last-child {
+  border-bottom: 0;
+}
