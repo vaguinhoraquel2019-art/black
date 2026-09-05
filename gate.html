@@ -101,15 +101,24 @@ async function entrar() {
 
     const dados = doc.data();
     const agora = Date.now();
+    const isLifetime = dados.dias === 0 || dados.expira === null;
 
-    if (dados.expira < agora) {
-      await db.collection("keys").doc(key).delete();
-      throw new Error("expirada");
+    // Se já foi usada, verifica expiração (lifetime nunca expira)
+    if (dados.usada) {
+      if (!isLifetime && dados.expira < agora) {
+        await db.collection("keys").doc(key).delete();
+        throw new Error("expirada");
+      }
+    } else {
+      // Primeiro uso — começa a contar agora
+      const expira = isLifetime ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
+      await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
+      dados.expira = expira;
     }
 
     // Salva no sessionStorage e vai para o site
     sessionStorage.setItem("ag:key", key);
-    sessionStorage.setItem("ag:expira", dados.expira);
+    sessionStorage.setItem("ag:expira", isLifetime ? "99999999999999" : dados.expira);
     window.location.href = "index.html";
   } catch (e) {
     erro.classList.add("ativo");
