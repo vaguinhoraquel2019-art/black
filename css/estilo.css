@@ -1,0 +1,1411 @@
+/* ------------------------------------------------------------------ *
+ * Apostilas — mesma linguagem visual do resto da Black: preto de
+ * verdade, uma rampa de vermelho e nada mais. Sem verde, sem âmbar.
+ *
+ * Regra que vale aqui também: nada que custe por frame de rolagem —
+ * sem filter: blur() em elemento grande, sem backdrop-filter em barra
+ * fixa. O brilho é gradiente pintado.
+ * ------------------------------------------------------------------ */
+
+:root {
+  --background: oklch(0.113 0.007 20);
+  --foreground: oklch(0.965 0.003 60);
+  --ink: oklch(0.072 0.007 20);
+  --surface: oklch(0.163 0.01 21);
+
+  --primary-deep: oklch(0.335 0.148 24);
+  --primary: oklch(0.598 0.238 27);
+  --primary-bright: oklch(0.742 0.196 29);
+
+  --muted: oklch(0.705 0.014 30);
+  --border: oklch(0.68 0.045 28 / 0.2);
+  --border-forte: oklch(0.7 0.075 28 / 0.34);
+
+  --radius: 0.875rem;
+  --sombra-suave: 0 1px 2px -1px oklch(0 0 0 / 0.6), 0 8px 24px -16px oklch(0 0 0 / 0.8);
+  --sombra-alta: 0 2px 4px -2px oklch(0 0 0 / 0.7), 0 24px 48px -24px oklch(0 0 0 / 0.9);
+  --curva: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --fonte: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Escala fluida — o topo é contido porque a altura-x da Inter é grande. */
+  --t-sm: clamp(0.875rem, 0.84rem + 0.2vw, 0.9375rem);
+  --t-md: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem);
+  --t-lg: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  --t-xl: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem);
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--fonte);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-bright);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.limite {
+  margin: 0 auto;
+  width: min(100%, 84rem);
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .limite {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .limite {
+    padding-inline: 3rem;
+  }
+}
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------- cabeçalho */
+
+.cabecalho {
+  border-bottom: 1px solid var(--border);
+}
+
+.cabecalho .limite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 4rem;
+}
+
+@media (min-width: 480px) {
+  .cabecalho .limite {
+    gap: 1rem;
+  }
+}
+
+/* Abaixo de 480px sobra o brasão: com três abas o wordmark empurrava a
+   navegação para fora da tela. */
+@media (max-width: 479px) {
+  .marca span {
+    display: none;
+  }
+
+  .abas a {
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+}
+
+.marca img {
+  height: 2.25rem;
+  width: 2.25rem;
+  border-radius: 0.55rem;
+  object-fit: cover;
+  box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.12);
+}
+
+.marca span {
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.marca em {
+  color: var(--primary-bright);
+  font-style: normal;
+}
+
+.cabecalho p {
+  margin: 0;
+}
+
+/* ---------------------------------- capa */
+
+.capa {
+  border-bottom: 1px solid var(--border);
+}
+
+.capa .limite {
+  display: grid;
+  gap: 2rem;
+  padding-block: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .capa .limite {
+    grid-template-columns: 7fr 5fr;
+    align-items: center;
+    gap: 3.5rem;
+    padding-block: 4.5rem;
+  }
+}
+
+.capa h1 {
+  font-size: var(--t-xl);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  margin-top: 1.25rem;
+  max-width: 18ch;
+}
+
+.capa h1 em {
+  color: var(--primary-bright);
+  font-style: normal;
+  text-shadow: 0 0 32px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+.capa p.texto {
+  margin: 1.5rem 0 0;
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: 1.75;
+}
+
+.arte {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 6px);
+}
+
+.arte img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.arte::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--ink) 88%, transparent),
+    transparent 60%
+  );
+}
+
+/* ---------------------------------- filtros */
+
+.filtros {
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+@media (min-width: 1024px) {
+  .filtros {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+}
+
+.filtros .limite {
+  display: grid;
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .filtros .limite {
+    grid-template-columns: auto auto 1fr;
+    align-items: end;
+    gap: 2.5rem;
+  }
+}
+
+.grupo > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.pastilha {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+  .pastilha {
+    min-height: 2.25rem;
+  }
+}
+
+.pastilha:hover {
+  color: var(--foreground);
+  border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+.pastilha[aria-checked="true"] {
+  border-color: color-mix(in oklab, var(--primary) 42%, transparent);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--primary-bright);
+}
+
+.busca {
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .busca {
+    justify-self: end;
+    width: 18rem;
+  }
+}
+
+.busca input {
+  width: 100%;
+  height: 2.75rem;
+  margin-top: 0.65rem;
+  padding: 0 2.5rem 0 2.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.busca input::placeholder {
+  color: color-mix(in oklab, var(--muted) 80%, transparent);
+}
+
+.busca input:focus {
+  border-color: color-mix(in oklab, var(--primary) 60%, transparent);
+}
+
+.busca svg {
+  position: absolute;
+  left: 0.9rem;
+  bottom: 0.8rem;
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* ---------------------------------- acervo */
+
+.etapa {
+  padding-top: 3rem;
+}
+
+.etapa > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.etapa > header h2 {
+  font-size: var(--t-lg);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.serie {
+  padding-top: 2.5rem;
+  scroll-margin-top: 8rem;
+}
+
+.serie h3 {
+  font-size: var(--t-md);
+}
+
+.grade {
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Cartão cuja aresta acende no hover: borda + brilho interno, que o
+   compositor resolve de graça. */
+.caderno {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.35rem;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: linear-gradient(
+    162deg,
+    color-mix(in oklab, var(--surface) 94%, var(--primary)),
+    var(--background) 78%
+  );
+  box-shadow: var(--sombra-suave);
+  text-decoration: none;
+  transition:
+    transform 0.45s var(--curva),
+    box-shadow 0.45s var(--curva),
+    border-color 0.35s ease;
+}
+
+@media (min-width: 640px) {
+  .caderno {
+    padding: 1.5rem;
+  }
+}
+
+.caderno:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--primary) 55%, transparent);
+  box-shadow:
+    var(--sombra-alta),
+    inset 0 1px 0 0 color-mix(in oklab, var(--primary) 22%, transparent),
+    0 20px 46px -32px color-mix(in oklab, var(--primary) 70%, transparent);
+}
+
+.caderno .topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 42%, transparent);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--primary-bright);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.caderno h4 {
+  margin-top: 1rem;
+  font-size: var(--t-md);
+  line-height: 1.15;
+}
+
+.materias {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+}
+
+.materias li {
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.caderno .rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1.1rem;
+  border-top: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.abrir {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--primary-bright);
+  transition: transform 0.3s var(--curva);
+}
+
+.caderno:hover .abrir {
+  transform: translateX(2px);
+}
+
+.vazio {
+  padding: 5rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.vazio button {
+  margin-top: 0.75rem;
+  background: none;
+  border: 0;
+  color: var(--primary-bright);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ---------------------------------- rodapé */
+
+.rodape {
+  border-top: 1px solid var(--border);
+  margin-top: 4rem;
+}
+
+.rodape .limite {
+  padding-block: 2.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------- abas do topo */
+
+.abas {
+  display: flex;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.25rem;
+}
+
+.abas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.abas a:hover {
+  color: var(--foreground);
+}
+
+.abas a[aria-current="page"] {
+  background: linear-gradient(140deg, var(--primary), var(--primary-deep));
+  color: oklch(0.995 0.002 60);
+  box-shadow: 0 8px 20px -12px color-mix(in oklab, var(--primary) 90%, transparent);
+}
+
+/* ---------------------------------- botões da capa */
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.9rem;
+  padding: 0 1.4rem;
+  border-radius: 999px;
+  background: linear-gradient(140deg, var(--primary), var(--primary-deep));
+  color: oklch(0.995 0.002 60);
+  font-size: 0.875rem;
+  text-decoration: none;
+  box-shadow: 0 12px 30px -18px color-mix(in oklab, var(--primary) 95%, transparent);
+  transition:
+    transform 0.3s var(--curva),
+    box-shadow 0.3s var(--curva);
+}
+
+.botao:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px -16px color-mix(in oklab, var(--primary) 85%, transparent);
+}
+
+.botao.vazado {
+  background: transparent;
+  border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent);
+  color: var(--foreground);
+  box-shadow: none;
+}
+
+.botao.vazado:hover {
+  border-color: color-mix(in oklab, var(--primary) 70%, transparent);
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+}
+
+/* ---------------------------------- o que tem aqui */
+
+.explica {
+  padding-top: 4rem;
+}
+
+.explica > h2 {
+  font-size: var(--t-lg);
+  letter-spacing: -0.03em;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.colunas {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .colunas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+.colunas article {
+  padding: 1.75rem;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+  background: linear-gradient(
+    162deg,
+    color-mix(in oklab, var(--surface) 94%, var(--primary)),
+    var(--background) 78%
+  );
+}
+
+.colunas h3 {
+  margin-top: 0.9rem;
+  font-size: var(--t-md);
+  line-height: 1.2;
+}
+
+.colunas p {
+  margin: 0.9rem 0 0;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: 1.7;
+}
+
+.linha {
+  display: inline-block;
+  margin-top: 1.25rem;
+  color: var(--primary-bright);
+  font-size: 0.875rem;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 45%, transparent);
+  padding-bottom: 2px;
+}
+
+.linha:hover {
+  border-color: var(--primary-bright);
+}
+
+/* ---------------------------------- convite do servidor */
+
+.convite {
+  padding-top: 4.5rem;
+}
+
+.convite > .kicker {
+  max-width: 46rem;
+  margin: 0 auto 0.9rem;
+}
+
+.cartao-convite {
+  max-width: 46rem;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid color-mix(in oklab, var(--primary) 24%, transparent);
+  background: linear-gradient(
+    162deg,
+    color-mix(in oklab, var(--surface) 92%, var(--primary)),
+    var(--background) 82%
+  );
+  box-shadow: var(--sombra-alta);
+}
+
+/* A arte entra inteira: recortar em faixa baixa partia o wordmark no meio. */
+.capa-convite {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.corpo-convite {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .corpo-convite {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.4rem 1.6rem;
+  }
+}
+
+/* O brasão sobe por cima da capa, como no embed do Discord. */
+.brasao {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-top: -3.25rem;
+  border-radius: 1.1rem;
+  border: 4px solid color-mix(in oklab, var(--surface) 92%, var(--primary));
+  object-fit: cover;
+  background: var(--ink);
+}
+
+.sobre-servidor h2 {
+  font-size: var(--t-md);
+  letter-spacing: -0.02em;
+}
+
+.descricao {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.contagem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: 0.7rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ponto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ponto::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--muted) 70%, transparent);
+}
+
+/* Online é o vermelho da marca — verde não existe nesta paleta. */
+.ponto.online::before {
+  background: var(--primary-bright);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 20%, transparent);
+}
+
+/* Azul do Discord: é a marca deles, e o usuário pediu o botão igual ao de lá. */
+.botao-discord {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  background: #5865f2;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 14px 32px -18px #5865f2;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s var(--curva);
+}
+
+.botao-discord:hover {
+  background: #4752c4;
+  transform: translateY(-2px);
+}
+
+.aviso-convite {
+  max-width: 46rem;
+  margin: 0.9rem auto 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--muted) 80%, transparent);
+}
+
+/* ---------------------------------- assinatura de canto
+
+   Sem moldura e sem círculo: a foto é mascarada por um gradiente radial,
+   então ela se dissolve no preto em vez de virar um crachá. O brilho é
+   drop-shadow de uma imagem pequena — não custa por frame de rolagem. */
+
+/* Só do desktop para cima: em tela de celular ela cobre card e filtro,
+   e o crédito já está no rodapé da conversa toda. */
+.assina {
+  display: none;
+  position: fixed;
+  isolation: isolate;
+  right: 0.75rem;
+  top: 38%;
+  translate: 0 -50%;
+  z-index: 40;
+  justify-items: center;
+  gap: 0;
+  pointer-events: none;
+  opacity: 0;
+  animation: aparece 1.2s var(--curva) 0.6s forwards;
+}
+
+@keyframes aparece {
+  to {
+    opacity: 0.92;
+  }
+}
+
+@media (min-width: 1024px) {
+  .assina {
+    display: grid;
+    right: 1.75rem;
+  }
+}
+
+.assina img {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 0 34px -6px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+@media (min-width: 640px) {
+  .assina img {
+    width: 8rem;
+    height: 8rem;
+  }
+
+}
+
+@media (min-width: 1024px) {
+  .assina img {
+    width: 10.5rem;
+    height: 10.5rem;
+  }
+}
+
+.assina .nome {
+  margin-top: 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  color: var(--foreground);
+  text-transform: lowercase;
+}
+
+.assina .cargo-assina {
+  margin-top: 0.2rem;
+  max-width: 7rem;
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  text-align: center;
+  color: color-mix(in oklab, var(--muted) 85%, transparent);
+  text-transform: lowercase;
+}
+
+/* Depois da regra base, senão o tamanho do celular vence por ordem. */
+@media (min-width: 640px) {
+  .assina .nome {
+    margin-top: 0.85rem;
+    font-size: 0.8125rem;
+  }
+
+  .assina .cargo-assina {
+    max-width: 16rem;
+    font-size: 0.625rem;
+  }
+}
+
+/* ---------------------------------- doação */
+
+.capa-curta .limite {
+  padding-block: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .capa-curta .limite {
+    grid-template-columns: 1fr;
+    padding-block: 4rem;
+  }
+}
+
+.doacao {
+  padding-bottom: 2rem;
+}
+
+.cartao-doacao {
+  display: grid;
+  gap: 2rem;
+  max-width: 56rem;
+  padding: 1.75rem;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid color-mix(in oklab, var(--primary) 26%, transparent);
+  background:
+    radial-gradient(
+      70% 110% at 0% 0%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      162deg,
+      color-mix(in oklab, var(--surface) 94%, var(--primary)),
+      var(--background) 78%
+    );
+  box-shadow: var(--sombra-alta);
+}
+
+@media (min-width: 768px) {
+  .cartao-doacao {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 2.25rem 2.5rem;
+  }
+}
+
+/* O QR fica num azulejo claro: código escuro sobre fundo claro é o que
+   qualquer leitor lê de primeira. */
+.qr {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  border-radius: calc(var(--radius) + 2px);
+  background: #f6f1ec;
+  box-shadow: 0 18px 40px -26px oklch(0 0 0 / 0.9);
+}
+
+.qr img {
+  display: block;
+  width: 12.5rem;
+  height: 12.5rem;
+}
+
+@media (min-width: 768px) {
+  .qr img {
+    width: 13.5rem;
+    height: 13.5rem;
+  }
+}
+
+.qr figcaption {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #2a0a0c;
+}
+
+.dados-doacao h2 {
+  margin-top: 0.7rem;
+  font-size: var(--t-md);
+  letter-spacing: -0.02em;
+  word-break: break-word;
+}
+
+.dados-doacao h2 em {
+  font-style: normal;
+  color: var(--primary-bright);
+}
+
+.texto-doacao {
+  margin: 1rem 0 0;
+  max-width: 44ch;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: 1.7;
+}
+
+.acoes-doacao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.acoes-doacao .botao {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.rodape-doacao {
+  margin: 1.25rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: color-mix(in oklab, var(--muted) 85%, transparent);
+}
+
+/* ---------------------------------- cortina de doação */
+
+body.travado {
+  overflow: hidden;
+}
+
+/* Preto translúcido em vez de backdrop-filter: numa camada do tamanho da
+   tela o desfoque seria redesenhado a cada frame. */
+.cortina {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: color-mix(in oklab, var(--ink) 88%, transparent);
+  animation: aparece-cortina 0.35s var(--curva) both;
+}
+
+/* `display: grid` acima vence o `[hidden]` do navegador — sem isto a
+   cortina continua na tela depois de fechada. */
+.cortina[hidden] {
+  display: none;
+}
+
+@keyframes aparece-cortina {
+  from {
+    opacity: 0;
+  }
+}
+
+.painel-doar {
+  position: relative;
+  width: min(100%, 27rem);
+  margin: auto;
+  padding: 2rem 1.5rem 1.75rem;
+  border-radius: calc(var(--radius) + 8px);
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  background:
+    radial-gradient(
+      80% 60% at 50% 0%,
+      color-mix(in oklab, var(--primary) 20%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(
+      170deg,
+      color-mix(in oklab, var(--surface) 94%, var(--primary)),
+      var(--background) 72%
+    );
+  box-shadow: var(--sombra-alta);
+  outline: none;
+  animation: sobe-painel 0.45s var(--curva) both;
+}
+
+@media (min-width: 640px) {
+  .painel-doar {
+    padding: 2.25rem 2rem 2rem;
+  }
+}
+
+@keyframes sobe-painel {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.fechar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: grid;
+  place-items: center;
+  height: 2.5rem;
+  width: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.fechar:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.topo-painel {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.topo-painel img {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 999px;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 40%, transparent),
+    0 0 30px -8px color-mix(in oklab, var(--primary) 70%, transparent);
+}
+
+.topo-painel .kicker {
+  margin-top: 1rem;
+}
+
+.topo-painel h2 {
+  margin-top: 0.35rem;
+  font-size: var(--t-md);
+  text-transform: lowercase;
+  letter-spacing: -0.01em;
+}
+
+.arroba {
+  margin: 0.2rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: color-mix(in oklab, var(--muted) 85%, transparent);
+}
+
+.chamada {
+  margin: 1rem 0 0;
+  max-width: 30ch;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--foreground);
+}
+
+.chamada-cartao {
+  max-width: 40ch;
+  margin-top: 1rem;
+  color: var(--primary-bright);
+}
+
+.form-doar {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+
+.campo {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.campo input,
+.campo textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: color-mix(in oklab, var(--ink) 60%, transparent);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: 0.75rem 0.9rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+  resize: none;
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: color-mix(in oklab, var(--muted) 70%, transparent);
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  border-color: color-mix(in oklab, var(--primary) 60%, transparent);
+}
+
+.valores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.valores .pastilha {
+  min-height: 2.4rem;
+  letter-spacing: 0.08em;
+}
+
+.contador {
+  position: absolute;
+  right: 0.2rem;
+  bottom: -1.2rem;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  color: color-mix(in oklab, var(--muted) 70%, transparent);
+}
+
+.form-doar .botao {
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.nota-painel {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--muted) 90%, transparent);
+}
+
+.agora-nao {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--primary-bright);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Com a cortina aberta, a assinatura do canto aparecia por trás dela.
+   A classe do body é o gancho: o irmão `~` não servia porque a assinatura
+   vem antes da cortina no HTML. */
+body.travado .assina {
+  display: none;
+}
+
+/* ---------------------------------- menu do celular */
+
+.hamburguer {
+  display: grid;
+  gap: 4px;
+  place-content: center;
+  height: 2.75rem;
+  width: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hamburguer span {
+  display: block;
+  width: 1rem;
+  height: 1.5px;
+  border-radius: 2px;
+  background: var(--foreground);
+  transition: transform 0.3s var(--curva);
+}
+
+.hamburguer[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+
+.hamburguer[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburguer[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
+
+/* Sem isto o `display: grid` vence o `[hidden]` do navegador e o menu
+   nasce aberto — foi o que aconteceu com a cortina também. */
+.menu-celular[hidden] {
+  display: none;
+}
+
+.menu-celular {
+  display: grid;
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 1.25rem 1rem;
+  background: var(--background);
+}
+
+.menu-celular a {
+  padding: 0.9rem 0.25rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  color: var(--muted);
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.menu-celular a:last-child {
+  border-bottom: 0;
+}
+
+.menu-celular a[aria-current="page"] {
+  color: var(--primary-bright);
+}
+
+/* Das abas em pastilha para cima só no desktop; no celular manda o menu. */
+@media (max-width: 639px) {
+  .abas {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .hamburguer,
+  .menu-celular {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------- qr dentro da cortina */
+
+.qr-painel {
+  justify-self: center;
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+}
+
+.qr-painel img {
+  width: 9.5rem;
+  height: 9.5rem;
+}
+
+@media (min-width: 640px) {
+  .qr-painel img {
+    width: 11rem;
+    height: 11rem;
+  }
+}
+
+.painel-doar {
+  display: grid;
+  justify-items: stretch;
+}
+
+.acoes-painel {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 480px) {
+  .acoes-painel {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.acoes-painel .botao {
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.painel-doar .nota-painel {
+  margin-top: 1.1rem;
+}
+

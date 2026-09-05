@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Doar · Black</title>
+    <meta name="description" content="Mande um pix para manter os bots, os scripts e as apostilas de graça.">
+    <meta name="theme-color" content="#0a0505">
+    <link rel="icon" href="/img/marca.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="/img/marca.webp">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Doar · Black">
+    <meta property="og:description" content="Mande um pix para manter os bots, os scripts e as apostilas de graça.">
+    <meta property="og:image" content="/img/banner.webp">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/estilo.css">
+  </head>
+
+  <body>
+    <header class="cabecalho">
+      <div class="limite">
+        <a class="marca" href="/" aria-label="Black — início">
+          <img src="images/marca.webp" alt="" width="36" height="36">
+          <span>Black</span>
+        </a>
+
+        <nav class="abas" aria-label="Seções">
+          <a href="/">Início</a>
+          <a href="/apostilas">Apostilas</a>
+          <a href="/doar" aria-current="page">Doar</a>
+        </nav>
+
+        <button class="hamburguer" type="button" id="abrir-menu" aria-expanded="false" aria-controls="menu-celular" aria-label="Abrir menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <nav class="menu-celular" id="menu-celular" aria-label="Seções" hidden="">
+        <a href="/">Início</a>
+        <a href="/apostilas">Apostilas</a>
+        <a href="/doar" aria-current="page">Doar</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="capa capa-curta">
+        <div class="limite">
+          <div>
+            <p class="kicker">Apoio · pix</p>
+            <h1>Se ajudou, <em>ajuda de volta.</em></h1>
+            <p class="texto">
+              Nada aqui vira pago por causa disso. O pix ajuda a pagar o que roda por trás — e quem
+              não puder mandar nada continua com tudo igual, do mesmo jeito.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="doacao limite" aria-labelledby="doacao-titulo">
+        <div class="cartao-doacao">
+          <!-- QR de verdade: aponta para a mesma página do botão. -->
+          <figure class="qr">
+            <img src="images/qr-pix.svg" alt="QR code que abre a página de doação pixgg.com/rochwxs" width="370" height="370" decoding="async">
+            <figcaption>aponte a câmera</figcaption>
+          </figure>
+
+          <div class="dados-doacao">
+            <p class="kicker">Doação via PixGG</p>
+            <h2 id="doacao-titulo">pixgg.com/<em>rochwxs</em></h2>
+            <p class="chamada chamada-cartao">
+              Doe para ajudar o projeto e a criar mais bots e scripts totalmente gratuitos!
+            </p>
+            <p class="texto-doacao">
+              Abre a página do PixGG, onde dá para escolher o valor e mandar uma mensagem junto. O
+              pix cai direto na conta — sem meta, sem recompensa, sem cargo diferente no servidor.
+            </p>
+
+            <div class="acoes-doacao">
+              <a class="botao" href="https://pixgg.com/rochwxs" target="_blank" rel="noopener noreferrer">
+                Doar pelo PixGG
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M7 17 17 7M9 7h8v8"></path>
+                </svg>
+              </a>
+
+              <button class="botao vazado" type="button" id="copiar-link">Copiar o link</button>
+            </div>
+
+            <p class="rodape-doacao" id="aviso-copia" role="status" aria-live="polite">
+              pixgg.com/rochwxs
+            </p>
+
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="rodape">
+      <div class="limite">
+        <p class="kicker">Black · 2026</p>
+      </div>
+    </footer>
+
+    <!-- Assinatura na lateral: foto redonda vinda da Lanyard e o crédito
+         embaixo. Não captura toque — passa por cima dos cards e um crédito
+         nunca pode roubar o clique de um link. -->
+    <div class="assina">
+      <img class="foto-lanyard" src="images/marca.webp" alt="" width="168" height="168" decoding="async">
+      <span class="nome">saints</span>
+      <span class="cargo-assina">co founder e developer</span>
+    </div>
+
+
+    <script src="js/site.js"></script>
+    <script src="js/doar.js"></script>
+  
+
+<script async="" src="js/index.js" data-nf-variant="public" data-netlify-site-id="c061437d-9a12-40be-9982-7a2110e4589f" data-app-host="app.netlify.com"></script>
+</body></html>
