@@ -320,14 +320,13 @@ function geraPixCopiaECola(chave, nome, cidade, valor, descricao) {
 
 /* ── QR Code (canvas manual) ── */
 function desenhaQR(canvas, texto) {
-  /* Usa a lib qrcode-generator via CDN */
   const qr = qrcode(0, "M");
   qr.addData(texto);
-  qr.generate();
+  qr.make();
 
-  const mod   = qr.getModuleCount();
-  const size  = canvas.width;
-  const cell  = Math.floor(size / (mod + 4));
+  const mod    = qr.getModuleCount();
+  const size   = canvas.width;
+  const cell   = Math.floor(size / (mod + 4));
   const offset = Math.floor((size - cell * mod) / 2);
 
   const ctx = canvas.getContext("2d");
