@@ -127,7 +127,7 @@ function montaCortina() {
       <div class="topo-painel">
         <img class="foto-lanyard" src="images/marca.webp" alt="" width="112" height="112" decoding="async" />
         <p class="kicker">Doação para</p>
-        <h2 id="painel-titulo">BLACK</h2>
+        <h2 id="painel-titulo">ANTI GOVERNO</h2>
         <p class="arroba">pixgg.com/rochwxs</p>
         <p class="chamada">
           Doe para ajudar o projeto e a criar mais bots e scripts totalmente gratuitos!
