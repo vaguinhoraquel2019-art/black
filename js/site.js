@@ -230,26 +230,9 @@ for (const gatilho of document.querySelectorAll('a[href="#doar"]')) {
  * ------------------------------------------------------------------ */
 
 async function carregaFoto() {
+  /* Foto fixa — não usa Lanyard */
   const fotos = document.querySelectorAll(".foto-lanyard");
-  if (fotos.length === 0) return;
-
-  try {
-    const resposta = await fetch(`https://api.lanyard.rest/v1/users/${AUTOR_ID}`);
-    const corpo    = await resposta.json();
-    if (!corpo.success) return;
-
-    const perfil = corpo.data.discord_user;
-    if (!perfil.avatar) return;
-
-    const animado = perfil.avatar.startsWith("a_");
-    const url = `https://cdn.discordapp.com/avatars/${perfil.id}/${perfil.avatar}.${
-      animado ? "gif" : "png"
-    }?size=256`;
-
-    for (const foto of fotos) foto.src = url;
-  } catch {
-    /* fica o brasão */
-  }
+  for (const foto of fotos) foto.src = "images/123.png";
 }
 
 carregaFoto();
