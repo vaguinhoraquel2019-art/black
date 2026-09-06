@@ -19,36 +19,59 @@
     .card {
       width: 100%;
       max-width: 22rem;
-      background: #141414;
-      border: 1px solid #222;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.15);
       border-radius: 1rem;
       padding: 2rem 1.75rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1rem;
     }
     h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
-    p  { font-size: 0.825rem; color: #000; }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      background: rgba(0,0,0,0.07);
+      border-radius: 0.5rem;
+      padding: 0.25rem;
+    }
+    .tab {
+      padding: 0.6rem;
+      border: none;
+      border-radius: 0.35rem;
+      background: transparent;
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #555;
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab.ativo {
+      background: #fff;
+      color: #000;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
     input {
       width: 100%;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
+      background: rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.12);
       border-radius: 0.5rem;
       padding: 0.85rem 1rem;
       color: #000;
       font: inherit;
       font-size: 0.9375rem;
       outline: none;
-      letter-spacing: 0.05em;
       transition: border-color 0.2s;
     }
-    input:focus { border-color: #555; }
-    input::placeholder { color: #000; letter-spacing: 0; }
-    button {
+    input:focus { border-color: rgba(0,0,0,0.35); }
+    input::placeholder { color: #999; }
+    button.btn-principal {
       width: 100%;
       padding: 0.9rem;
-      background: #fff;
-      color: #000;
+      background: #000;
+      color: #fff;
       border: none;
       border-radius: 0.5rem;
       font: inherit;
@@ -57,20 +80,39 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    button:hover { background: #ddd; }
-    .erro { font-size: 0.8rem; color: #e55; text-align: center; display: none; }
+    button.btn-principal:hover { background: #222; }
+    button.btn-principal:disabled { background: #aaa; cursor: not-allowed; }
+    .erro { font-size: 0.8rem; color: #c00; text-align: center; display: none; }
     .erro.ativo { display: block; }
+    .form { display: flex; flex-direction: column; gap: 0.75rem; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 <div class="card">
-  <div>
-    <h1>fofura</h1>
-    <p style="margin-top:0.4rem">Digite sua key de acesso para continuar.</p>
+  <h1>fofura</h1>
+
+  <div class="tabs">
+    <button class="tab ativo" id="tab-entrar" onclick="mostraAba('entrar')">Entrar</button>
+    <button class="tab" id="tab-registrar" onclick="mostraAba('registrar')">Registrar</button>
   </div>
-  <input type="text" id="key" placeholder="DIARIA-xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-  <button id="btn">Entrar</button>
-  <p class="erro" id="erro">Key inválida ou expirada.</p>
+
+  <!-- Entrar -->
+  <div class="form" id="form-entrar">
+    <input type="text" id="e-nome" placeholder="Nome" autocomplete="off" spellcheck="false">
+    <input type="password" id="e-senha" placeholder="Senha">
+    <button class="btn-principal" id="btn-entrar">Entrar</button>
+  </div>
+
+  <!-- Registrar -->
+  <div class="form hidden" id="form-registrar">
+    <input type="text" id="r-nome" placeholder="Nome" autocomplete="off" spellcheck="false">
+    <input type="password" id="r-senha" placeholder="Senha">
+    <input type="text" id="r-key" placeholder="Key de acesso" autocomplete="off" spellcheck="false">
+    <button class="btn-principal" id="btn-registrar">Registrar</button>
+  </div>
+
+  <p class="erro" id="erro"></p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -80,57 +122,154 @@
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.firestore();
 
-async function entrar() {
-  const key  = document.getElementById("key").value.trim().toUpperCase();
-  const erro = document.getElementById("erro");
-  const btn  = document.getElementById("btn");
-  erro.classList.remove("ativo");
-  if (!key) return;
+function mostraAba(aba) {
+  document.getElementById("form-entrar").classList.toggle("hidden", aba !== "entrar");
+  document.getElementById("form-registrar").classList.toggle("hidden", aba !== "registrar");
+  document.getElementById("tab-entrar").classList.toggle("ativo", aba === "entrar");
+  document.getElementById("tab-registrar").classList.toggle("ativo", aba === "registrar");
+  document.getElementById("erro").classList.remove("ativo");
+}
+
+function mostraErro(msg) {
+  const e = document.getElementById("erro");
+  e.textContent = msg;
+  e.classList.add("ativo");
+}
+
+function hashSenha(senha) {
+  // hash simples via btoa para não guardar senha em texto puro
+  return btoa(unescape(encodeURIComponent(senha)));
+}
+
+/* ── REGISTRAR ── */
+document.getElementById("btn-registrar").addEventListener("click", async () => {
+  const nome  = document.getElementById("r-nome").value.trim();
+  const senha = document.getElementById("r-senha").value;
+  const key   = document.getElementById("r-key").value.trim().toUpperCase();
+  const btn   = document.getElementById("btn-registrar");
+
+  if (!nome || !senha || !key) { mostraErro("Preencha todos os campos."); return; }
 
   btn.textContent = "Verificando...";
   btn.disabled = true;
 
   try {
-    const doc = await db.collection("keys").doc(key).get();
-    if (!doc.exists) throw new Error("inexistente");
+    // Verifica se nome já existe
+    const nomeDoc = await db.collection("usuarios").doc(nome.toLowerCase()).get();
+    if (nomeDoc.exists) { mostraErro("Esse nome já está em uso."); return; }
 
-    const dados   = doc.data();
+    // Verifica a key
+    const keyDoc = await db.collection("keys").doc(key).get();
+    if (!keyDoc.exists) { mostraErro("Key inválida."); return; }
+
+    const dados   = keyDoc.data();
     const agora   = Date.now();
     const isLife  = dados.dias === 0 || dados.expira === null;
 
-    if (dados.usada) {
-      // key já foi usada — verifica se expirou (lifetime nunca expira)
-      if (!isLife && dados.expira < agora) {
-        await db.collection("keys").doc(key).delete();
-        throw new Error("expirada");
-      }
-    } else {
-      // primeiro uso — começa a contar agora
-      const expira = isLife ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
-      await db.collection("keys").doc(key).update({
-        usada: true,
-        expira: expira,
-        primeiroUso: agora
-      });
-      dados.expira = expira;
-    }
+    if (dados.usada) { mostraErro("Essa key já foi usada."); return; }
 
-    // guarda no sessionStorage e entra
+    // Ativa a key
+    const expira = isLife ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
+    await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
+
+    // Cria o usuário
+    await db.collection("usuarios").doc(nome.toLowerCase()).set({
+      nome,
+      senha: hashSenha(senha),
+      key,
+      expira,
+      isLife,
+      criado: agora
+    });
+
+    // Salva sessão
+    localStorage.setItem("ag:nome", nome.toLowerCase());
+    localStorage.setItem("ag:hash", hashSenha(senha));
     sessionStorage.setItem("ag:key", key);
-    sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(dados.expira));
+    sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(expira));
+
     window.location.href = "index.html";
 
-  } catch (e) {
-    erro.classList.add("ativo");
-    btn.textContent = "Entrar";
-    btn.disabled = false;
+  } catch(e) {
+    mostraErro("Erro: " + e.message);
   }
-}
 
-document.getElementById("btn").addEventListener("click", entrar);
-document.getElementById("key").addEventListener("keydown", e => {
-  if (e.key === "Enter") entrar();
+  btn.textContent = "Registrar";
+  btn.disabled = false;
 });
+
+/* ── ENTRAR ── */
+document.getElementById("btn-entrar").addEventListener("click", async () => {
+  const nome  = document.getElementById("e-nome").value.trim().toLowerCase();
+  const senha = document.getElementById("e-senha").value;
+  const btn   = document.getElementById("btn-entrar");
+
+  if (!nome || !senha) { mostraErro("Preencha todos os campos."); return; }
+
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
+
+  try {
+    const userDoc = await db.collection("usuarios").doc(nome).get();
+    if (!userDoc.exists) { mostraErro("Nome ou senha incorretos."); return; }
+
+    const user  = userDoc.data();
+    if (user.senha !== hashSenha(senha)) { mostraErro("Nome ou senha incorretos."); return; }
+
+    const agora = Date.now();
+
+    // Verifica expiração (lifetime nunca expira)
+    if (!user.isLife && user.expira !== null && user.expira < agora) {
+      mostraErro("Seu acesso expirou.");
+      return;
+    }
+
+    // Salva sessão
+    localStorage.setItem("ag:nome", nome);
+    localStorage.setItem("ag:hash", hashSenha(senha));
+    sessionStorage.setItem("ag:key", user.key);
+    sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
+
+    window.location.href = "index.html";
+
+  } catch(e) {
+    mostraErro("Erro: " + e.message);
+  }
+
+  btn.textContent = "Entrar";
+  btn.disabled = false;
+});
+
+/* Enter nos campos */
+["e-senha","r-key"].forEach(id => {
+  document.getElementById(id)?.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      const isReg = !document.getElementById("form-registrar").classList.contains("hidden");
+      isReg ? document.getElementById("btn-registrar").click()
+            : document.getElementById("btn-entrar").click();
+    }
+  });
+});
+
+/* Login automático se já tem sessão salva */
+(async function autoLogin() {
+  const nome = localStorage.getItem("ag:nome");
+  const hash = localStorage.getItem("ag:hash");
+  if (!nome || !hash) return;
+
+  try {
+    const userDoc = await db.collection("usuarios").doc(nome).get();
+    if (!userDoc.exists) return;
+    const user = userDoc.data();
+    if (user.senha !== hash) return;
+    const agora = Date.now();
+    if (!user.isLife && user.expira !== null && user.expira < agora) return;
+
+    sessionStorage.setItem("ag:key", user.key);
+    sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
+    window.location.href = "index.html";
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
