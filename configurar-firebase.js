@@ -1,4 +1,4 @@
-const fs   = require("fs");
+﻿const fs   = require("fs");
 const path = require("path");
 const base = __dirname;
 
@@ -31,7 +31,7 @@ const gateHTML = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ANTI GOVERNO — Acesso</title>
+  <title>fofura — Acesso</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -98,7 +98,7 @@ const gateHTML = `<!DOCTYPE html>
 <body>
 <div class="card">
   <div>
-    <h1>ANTI GOVERNO</h1>
+    <h1>fofura</h1>
     <p style="margin-top:0.4rem">Digite sua key de acesso para continuar.</p>
   </div>
   <input type="text" id="key" placeholder="DIARIA-xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
@@ -175,7 +175,7 @@ const adminHTML = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin — ANTI GOVERNO</title>
+  <title>Admin — fofura</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -348,7 +348,7 @@ const adminHTML = `<!DOCTYPE html>
 <!-- ADMIN -->
 <div id="tela-admin">
   <div class="topo">
-    <h1>Painel Admin — ANTI GOVERNO</h1>
+    <h1>Painel Admin — fofura</h1>
     <button class="btn-sair" id="btn-sair">Sair</button>
   </div>
 
