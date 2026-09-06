@@ -8,17 +8,17 @@
 
 :root {
   --background: #04ff00;
-  --foreground: oklch(0.97 0 0);
+  --foreground: #000000;
   --ink: #02cc00;
-  --surface: oklch(0.14 0 0);
+  --surface: #03dd00;
 
-  --primary-deep: oklch(0.28 0 0);
-  --primary: oklch(0.55 0 0);
-  --primary-bright: oklch(0.82 0 0);
+  --primary-deep: #000000;
+  --primary: #000000;
+  --primary-bright: #000000;
 
-  --muted: oklch(0.62 0 0);
-  --border: oklch(1 0 0 / 0.14);
-  --border-forte: oklch(1 0 0 / 0.28);
+  --muted: #000000;
+  --border: rgba(0,0,0,0.3);
+  --border-forte: rgba(0,0,0,0.5);
 
   --radius: 0.875rem;
   --sombra-suave: 0 1px 2px -1px oklch(0 0 0 / 0.6), 0 8px 24px -16px oklch(0 0 0 / 0.8);
