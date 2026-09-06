@@ -128,7 +128,7 @@ function montaCortina() {
         <img class="foto-lanyard" src="images/marca.png" alt="" width="112" height="112" decoding="async" />
         <p class="kicker">Doação para</p>
         <h2 id="painel-titulo">fofura</h2>
-        <p class="arroba">pixgg.com/rochwxs</p>
+        <p class="arroba">vaguinhoraquel2019-art.github.io/black/pix/</p>
         <p class="chamada">
           Doe para ajudar o projeto e a criar mais bots e scripts totalmente gratuitos!
         </p>
@@ -141,8 +141,8 @@ function montaCortina() {
       </figure>
 
       <div class="acoes-painel">
-        <a class="botao" href="${PIXGG}" target="_blank" rel="noopener noreferrer" data-ir>
-          Ir para o PixGG
+        <a class="botao" href="https://vaguinhoraquel2019-art.github.io/black/pix/" target="_blank" rel="noopener noreferrer" data-ir>
+          Faça uma doação e suba no ranking
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M7 17 17 7M9 7h8v8" />
@@ -152,7 +152,7 @@ function montaCortina() {
       </div>
 
       <p class="nota-painel">
-        O pix é finalizado lá no PixGG — nada é cobrado aqui. Se não for doar agora,
+        O pix é finalizado na nossa página — nada é cobrado aqui. Se não for doar agora,
         <button type="button" class="agora-nao" data-fechar>fecha aqui</button> que o resto do site
         continua igual.
       </p>
