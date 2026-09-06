@@ -141,7 +141,7 @@ function montaCortina() {
       </figure>
 
       <div class="acoes-painel">
-        <a class="botao" href="https://vaguinhoraquel2019-art.github.io/black/pix/" target="_blank" rel="noopener noreferrer" data-ir>
+        <a class="botao" href="https://vaguinhoraquel2019-art.github.io/black/pix/" target="_blank" rel="noopener noreferrer">
           Faça uma doação e suba no ranking
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
