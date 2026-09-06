@@ -7,7 +7,7 @@
  * 4. Foto do Discord via Lanyard
  * ================================================================== */
 
-const PIXGG   = "https://pixgg.com/rochwxs";
+const PIXGG   = "https://vaguinhoraquel2019-art.github.io/black/pix/";
 const AUTOR_ID = "1127070909027590235";
 
 /* ------------------------------------------------------------------ *
@@ -184,9 +184,6 @@ function abreCortina() {
   cortina.addEventListener("click", (evento) => {
     if (evento.target === cortina) fechaCortina();
   });
-  cortina.querySelector("[data-ir]").addEventListener("click", () => {
-    window.setTimeout(fechaCortina, 400);
-  });
   cortina.querySelector("[data-copiar]").addEventListener("click", async (evento) => {
     const botao = evento.currentTarget;
     try {
@@ -194,7 +191,7 @@ function abreCortina() {
       botao.textContent = "Link copiado";
       window.setTimeout(() => (botao.textContent = "Copiar o link"), 2200);
     } catch {
-      botao.textContent = "pixgg.com/rochwxs";
+      botao.textContent = "vaguinhoraquel2019-art.github.io/black/pix/";
     }
   });
 }
