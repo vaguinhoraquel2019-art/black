@@ -338,29 +338,27 @@ async function carregaKeys() {
   const lista = document.getElementById("lista-keys");
   lista.innerHTML = "<p class='vazio'>Carregando...</p>";
 
-  const snap  = await db.collection("keys").orderBy("criada", "desc").get();
-  const agora = Date.now();
+  const snap = await db.collection("keys").orderBy("criada", "desc").get();
 
-  if (snap.empty) {
-    lista.innerHTML = "<p class='vazio'>Nenhuma key ativa.</p>";
+  // Apenas keys que ainda NÃO foram usadas
+  const naoUsadas = snap.docs.filter(d => !d.data().usada);
+
+  if (naoUsadas.length === 0) {
+    lista.innerHTML = "<p class='vazio'>Nenhuma key disponível.</p>";
     return;
   }
 
   lista.innerHTML = "";
-  for (const doc of snap.docs) {
-    const d       = doc.data();
-    const isLife  = d.dias === 0 || d.expira === null;
-    const expirou = !isLife && d.expira < agora;
-    const status  = isLife ? "♾ Lifetime"
-                  : !d.usada ? "Aguardando uso"
-                  : expirou ? "Expirada"
-                  : "Expira " + new Date(d.expira).toLocaleDateString("pt-BR");
+  for (const doc of naoUsadas) {
+    const d      = doc.data();
+    const isLife = d.dias === 0 || d.expira === null;
+    const status = isLife ? "♾ Lifetime" : `${d.dias} dia${d.dias > 1 ? "s" : ""}`;
 
     const item = document.createElement("div");
     item.className = "key-item";
     item.innerHTML = `
-      <span class="key-codigo" style="color:${expirou ? '#555' : '#ccc'}">${doc.id}</span>
-      <span class="key-expira" style="color:${isLife ? '#0af' : expirou ? '#e55' : '#666'}">${status}</span>
+      <span class="key-codigo" style="color:#ccc">${doc.id}</span>
+      <span class="key-expira" style="color:${isLife ? '#0af' : '#666'}">${status}</span>
       <button class="btn-deletar" data-key="${doc.id}" title="Deletar">✕</button>
     `;
     lista.append(item);
@@ -370,6 +368,7 @@ async function carregaKeys() {
     btn.addEventListener("click", async () => {
       await db.collection("keys").doc(btn.dataset.key).delete();
       carregaKeys();
+      carregaKeysUsadas();
     });
   }
 }
