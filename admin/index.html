@@ -262,6 +262,62 @@
     .log-data { color: #555; font-size: 0.7rem; }
     .log-valor { color: #04ff00; font-weight: 700; white-space: nowrap; }
 
+    /* usuários */
+    .user-card {
+      border: 1px solid #2a2a2a;
+      border-radius: 0.6rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      background: #1a1a1a;
+    }
+    .user-nome { color: #fff; font-weight: 700; font-size: 0.9rem; }
+    .user-campo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+    }
+    .user-label { color: #666; min-width: 5rem; }
+    .user-valor { color: #ccc; font-family: monospace; word-break: break-all; }
+    .user-valor.verde { color: #04ff00; }
+    .user-valor.vermelho { color: #e55; }
+    .input-nova-senha {
+      flex: 1;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 0.4rem;
+      padding: 0.4rem 0.6rem;
+      color: #fff;
+      font: inherit;
+      font-size: 0.78rem;
+      outline: none;
+    }
+    .input-nova-senha:focus { border-color: #555; }
+    .btn-trocar-senha {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      border-radius: 0.4rem;
+      color: #fff;
+      font: inherit;
+      font-size: 0.75rem;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-trocar-senha:hover { background: #3a3a3a; }
+    .btn-deletar-user {
+      background: none;
+      border: none;
+      color: #e55;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.5rem;
+      align-self: flex-end;
+    }
+
     /* ── banner de alerta pix ── */
     #banner-alerta {
       display: none;
@@ -374,6 +430,12 @@
       <div id="lista-logs-pix"><p class="vazio">Carregando...</p></div>
     </div>
 
+    <!-- Usuários -->
+    <div class="card">
+      <h2>Usuários</h2>
+      <div id="lista-usuarios"><p class="vazio">Carregando...</p></div>
+    </div>
+
   </div>
 </div>
 
@@ -398,6 +460,7 @@ document.getElementById("btn-login").addEventListener("click", () => {
     carregaLogsPix();
     iniciaListenerPix();
     carregaLinksApostilas();
+    carregaUsuarios();
   } else {
     document.getElementById("erro-login").classList.add("ativo");
   }
@@ -773,6 +836,130 @@ function filtrarLinks(q) {
     ? APOSTILAS_ADMIN.filter(a => a.nome.toLowerCase().includes(termo))
     : APOSTILAS_ADMIN;
   renderizaLinks(filtrado);
+}
+
+/* ══════════════════════════════════════════
+   USUÁRIOS
+   ══════════════════════════════════════════ */
+
+async function carregaUsuarios() {
+  const lista = document.getElementById("lista-usuarios");
+  lista.innerHTML = "<p class='vazio'>Carregando...</p>";
+
+  try {
+    const snap = await db.collection("usuarios").orderBy("criado", "desc").get();
+
+    if (snap.empty) {
+      lista.innerHTML = "<p class='vazio'>Nenhum usuário ainda.</p>";
+      return;
+    }
+
+    lista.innerHTML = "";
+
+    for (const doc of snap.docs) {
+      const u    = doc.data();
+      const nome = doc.id;
+      const criado = u.criado ? new Date(u.criado).toLocaleString("pt-BR") : "—";
+
+      // Busca info da key
+      let keyInfo = "—";
+      let diasInfo = "—";
+      if (u.key) {
+        try {
+          const keyDoc = await db.collection("keys").doc(u.key).get();
+          if (keyDoc.exists) {
+            const kd = keyDoc.data();
+            diasInfo = kd.dias === 0 ? "♾ Lifetime" : `${kd.dias} dia${kd.dias > 1 ? "s" : ""}`;
+          }
+        } catch(e) {}
+        keyInfo = u.key;
+      }
+
+      const expiraTexto = u.isLife ? "♾ Lifetime" :
+        u.expira ? new Date(u.expira).toLocaleDateString("pt-BR") : "—";
+      const expirou = !u.isLife && u.expira && u.expira < Date.now();
+
+      const card = document.createElement("div");
+      card.className = "user-card";
+      card.innerHTML = `
+        <div class="user-nome">${u.nome || nome}</div>
+
+        <div class="user-campo">
+          <span class="user-label">Nome</span>
+          <span class="user-valor">${nome}</span>
+        </div>
+
+        <div class="user-campo">
+          <span class="user-label">Senha (hash)</span>
+          <span class="user-valor" style="font-size:0.65rem;color:#555">${u.senha || "—"}</span>
+        </div>
+
+        <div class="user-campo">
+          <span class="user-label">Trocar senha</span>
+          <input class="input-nova-senha" type="text" placeholder="Nova senha" data-user="${nome}">
+          <button class="btn-trocar-senha" data-user="${nome}">Salvar</button>
+        </div>
+
+        <div class="user-campo">
+          <span class="user-label">Criado em</span>
+          <span class="user-valor">${criado}</span>
+        </div>
+
+        <div class="user-campo">
+          <span class="user-label">Key</span>
+          <span class="user-valor" style="font-size:0.65rem">${keyInfo}</span>
+        </div>
+
+        <div class="user-campo">
+          <span class="user-label">Dias da key</span>
+          <span class="user-valor verde">${diasInfo}</span>
+        </div>
+
+        <div class="user-campo">
+          <span class="user-label">Expira</span>
+          <span class="user-valor ${expirou ? "vermelho" : "verde"}">${expiraTexto}</span>
+        </div>
+
+        <button class="btn-deletar-user" data-user="${nome}">🗑 Deletar usuário</button>
+      `;
+      lista.append(card);
+    }
+
+    // Eventos trocar senha
+    for (const btn of lista.querySelectorAll(".btn-trocar-senha")) {
+      btn.addEventListener("click", async () => {
+        const user = btn.dataset.user;
+        const inp  = lista.querySelector(`.input-nova-senha[data-user="${user}"]`);
+        const nova = inp.value.trim();
+        if (!nova) return;
+        btn.textContent = "...";
+        btn.disabled = true;
+        try {
+          const hash = btoa(unescape(encodeURIComponent(nova)));
+          await db.collection("usuarios").doc(user).update({ senha: hash });
+          btn.textContent = "✓";
+          inp.value = "";
+          setTimeout(() => { btn.textContent = "Salvar"; btn.disabled = false; }, 1500);
+        } catch(e) {
+          btn.textContent = "Erro";
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // Eventos deletar usuário
+    for (const btn of lista.querySelectorAll(".btn-deletar-user")) {
+      btn.addEventListener("click", async () => {
+        const user = btn.dataset.user;
+        if (!confirm(`Deletar o usuário "${user}"?`)) return;
+        await db.collection("usuarios").doc(user).delete();
+        carregaUsuarios();
+      });
+    }
+
+  } catch(e) {
+    lista.innerHTML = `<p class='vazio'>Erro: ${e.message}</p>`;
+  }
 }
 
 /* ══════════════════════════════════════════
