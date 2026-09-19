@@ -1,0 +1,412 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>fofura — Acesso</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #04ff00;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #000;
+      padding: 1rem;
+    }
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-width: 46rem;
+      align-items: stretch;
+    }
+    @media (min-width: 640px) {
+      .wrapper {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+    }
+    .card {
+      width: 100%;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 1rem;
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    /* ── cartão de preços ── */
+    .card-precos {
+      width: 100%;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 1rem;
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .card-precos h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .card-precos h2 span {
+      color: #04ff00;
+      -webkit-text-stroke: 1px #000;
+    }
+    .lista-precos {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .item-preco {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 0.5rem;
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.09);
+    }
+    .item-preco.destaque {
+      background: rgba(4,255,0,0.12);
+      border-color: rgba(4,255,0,0.4);
+    }
+    .preco-plano {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #555;
+      min-width: 4.5rem;
+    }
+    .preco-sep {
+      flex: 1;
+      height: 1px;
+      background: rgba(0,0,0,0.12);
+    }
+    .preco-valor {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #000;
+    }
+    .btn-pague {
+      display: block;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.85rem;
+      background: #000;
+      color: #04ff00;
+      border: none;
+      border-radius: 0.5rem;
+      font: inherit;
+      font-size: 0.9375rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-pague:hover {
+      background: #222;
+      transform: translateY(-2px);
+    }
+    h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      background: rgba(0,0,0,0.07);
+      border-radius: 0.5rem;
+      padding: 0.25rem;
+    }
+    .tab {
+      padding: 0.6rem;
+      border: none;
+      border-radius: 0.35rem;
+      background: transparent;
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #555;
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab.ativo {
+      background: #fff;
+      color: #000;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+    input {
+      width: 100%;
+      background: rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 0.5rem;
+      padding: 0.85rem 1rem;
+      color: #000;
+      font: inherit;
+      font-size: 0.9375rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: rgba(0,0,0,0.35); }
+    input::placeholder { color: #999; }
+    button.btn-principal {
+      width: 100%;
+      padding: 0.9rem;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 0.5rem;
+      font: inherit;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.btn-principal:hover { background: #222; }
+    button.btn-principal:disabled { background: #aaa; cursor: not-allowed; }
+    .erro { font-size: 0.8rem; color: #c00; text-align: center; display: none; }
+    .erro.ativo { display: block; }
+    .form { display: flex; flex-direction: column; gap: 0.75rem; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Cartão de preços das keys -->
+  <div class="card-precos">
+    <h2>Preços das <span>Keys</span></h2>
+    <ul class="lista-precos">
+      <li class="item-preco">
+        <span class="preco-plano">1 dia</span>
+        <span class="preco-sep"></span>
+        <span class="preco-valor">R$ 3</span>
+      </li>
+      <li class="item-preco">
+        <span class="preco-plano">3 dias</span>
+        <span class="preco-sep"></span>
+        <span class="preco-valor">R$ 5</span>
+      </li>
+      <li class="item-preco">
+        <span class="preco-plano">5 dias</span>
+        <span class="preco-sep"></span>
+        <span class="preco-valor">R$ 7</span>
+      </li>
+      <li class="item-preco">
+        <span class="preco-plano">7 dias</span>
+        <span class="preco-sep"></span>
+        <span class="preco-valor">R$ 10</span>
+      </li>
+      <li class="item-preco">
+        <span class="preco-plano">15 dias</span>
+        <span class="preco-sep"></span>
+        <span class="preco-valor">R$ 15</span>
+      </li>
+      <li class="item-preco destaque">
+        <span class="preco-plano">30 dias</span>
+        <span class="preco-sep"></span>
+        <span class="preco-valor">R$ 23</span>
+      </li>
+    </ul>
+    <a class="btn-pague" href="https://vaguinhoraquel2019-art.github.io/black/pix/" target="_blank" rel="noopener noreferrer">PAGUE AQUI</a>
+  </div>
+
+  <!-- Cartão de login -->
+  <div class="card">
+  <h1>fofura</h1>
+
+  <div class="tabs">
+    <button class="tab ativo" id="tab-entrar" onclick="mostraAba('entrar')">Entrar</button>
+    <button class="tab" id="tab-registrar" onclick="mostraAba('registrar')">Registrar</button>
+  </div>
+
+  <!-- Entrar -->
+  <div class="form" id="form-entrar">
+    <input type="text" id="e-nome" placeholder="Nome" autocomplete="off" spellcheck="false">
+    <input type="password" id="e-senha" placeholder="Senha">
+    <button class="btn-principal" id="btn-entrar">Entrar</button>
+  </div>
+
+  <!-- Registrar -->
+  <div class="form hidden" id="form-registrar">
+    <input type="text" id="r-nome" placeholder="Nome" autocomplete="off" spellcheck="false">
+    <input type="password" id="r-senha" placeholder="Senha">
+    <input type="text" id="r-key" placeholder="Key de acesso" autocomplete="off" spellcheck="false">
+    <button class="btn-principal" id="btn-registrar">Registrar</button>
+  </div>
+
+  <p class="erro" id="erro"></p>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+function mostraAba(aba) {
+  document.getElementById("form-entrar").classList.toggle("hidden", aba !== "entrar");
+  document.getElementById("form-registrar").classList.toggle("hidden", aba !== "registrar");
+  document.getElementById("tab-entrar").classList.toggle("ativo", aba === "entrar");
+  document.getElementById("tab-registrar").classList.toggle("ativo", aba === "registrar");
+  document.getElementById("erro").classList.remove("ativo");
+}
+
+function mostraErro(msg) {
+  const e = document.getElementById("erro");
+  e.textContent = msg;
+  e.classList.add("ativo");
+}
+
+function hashSenha(senha) {
+  // hash simples via btoa para não guardar senha em texto puro
+  return btoa(unescape(encodeURIComponent(senha)));
+}
+
+/* ── REGISTRAR ── */
+document.getElementById("btn-registrar").addEventListener("click", async () => {
+  const nome  = document.getElementById("r-nome").value.trim();
+  const senha = document.getElementById("r-senha").value;
+  const key   = document.getElementById("r-key").value.trim().toUpperCase();
+  const btn   = document.getElementById("btn-registrar");
+
+  if (!nome || !senha || !key) { mostraErro("Preencha todos os campos."); return; }
+
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
+
+  try {
+    // Verifica se nome já existe
+    const nomeDoc = await db.collection("usuarios").doc(nome.toLowerCase()).get();
+    if (nomeDoc.exists) { mostraErro("Esse nome já está em uso."); return; }
+
+    // Verifica a key
+    const keyDoc = await db.collection("keys").doc(key).get();
+    if (!keyDoc.exists) { mostraErro("Key inválida."); return; }
+
+    const dados   = keyDoc.data();
+    const agora   = Date.now();
+    const isLife  = dados.dias === 0 || dados.expira === null;
+
+    if (dados.usada) { mostraErro("Essa key já foi usada."); return; }
+
+    // Ativa a key
+    const expira = isLife ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
+    await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
+
+    // Cria o usuário
+    await db.collection("usuarios").doc(nome.toLowerCase()).set({
+      nome,
+      senha: hashSenha(senha),
+      key,
+      expira,
+      isLife,
+      criado: agora
+    });
+
+    // Salva sessão
+    localStorage.setItem("ag:nome", nome.toLowerCase());
+    localStorage.setItem("ag:hash", hashSenha(senha));
+    sessionStorage.setItem("ag:key", key);
+    sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(expira));
+
+    window.location.href = "index.html";
+
+  } catch(e) {
+    mostraErro("Erro: " + e.message);
+  }
+
+  btn.textContent = "Registrar";
+  btn.disabled = false;
+});
+
+/* ── ENTRAR ── */
+document.getElementById("btn-entrar").addEventListener("click", async () => {
+  const nome  = document.getElementById("e-nome").value.trim().toLowerCase();
+  const senha = document.getElementById("e-senha").value;
+  const btn   = document.getElementById("btn-entrar");
+
+  if (!nome || !senha) { mostraErro("Preencha todos os campos."); return; }
+
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
+
+  try {
+    const userDoc = await db.collection("usuarios").doc(nome).get();
+    if (!userDoc.exists) { mostraErro("Nome ou senha incorretos."); return; }
+
+    const user  = userDoc.data();
+    if (user.senha !== hashSenha(senha)) { mostraErro("Nome ou senha incorretos."); return; }
+
+    const agora = Date.now();
+
+    // Verifica expiração (lifetime nunca expira)
+    if (!user.isLife && user.expira !== null && user.expira < agora) {
+      mostraErro("Seu acesso expirou.");
+      return;
+    }
+
+    // Salva sessão
+    localStorage.setItem("ag:nome", nome);
+    localStorage.setItem("ag:hash", hashSenha(senha));
+    sessionStorage.setItem("ag:key", user.key);
+    sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
+
+    window.location.href = "index.html";
+
+  } catch(e) {
+    mostraErro("Erro: " + e.message);
+  }
+
+  btn.textContent = "Entrar";
+  btn.disabled = false;
+});
+
+/* Enter nos campos */
+["e-senha","r-key"].forEach(id => {
+  document.getElementById(id)?.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      const isReg = !document.getElementById("form-registrar").classList.contains("hidden");
+      isReg ? document.getElementById("btn-registrar").click()
+            : document.getElementById("btn-entrar").click();
+    }
+  });
+});
+
+/* Login automático se já tem sessão salva */
+(async function autoLogin() {
+  const nome = localStorage.getItem("ag:nome");
+  const hash = localStorage.getItem("ag:hash");
+  if (!nome || !hash) return;
+
+  try {
+    const userDoc = await db.collection("usuarios").doc(nome).get();
+    if (!userDoc.exists) return;
+    const user = userDoc.data();
+    if (user.senha !== hash) return;
+    const agora = Date.now();
+    if (!user.isLife && user.expira !== null && user.expira < agora) return;
+
+    /* Popula sessionStorage ANTES de redirecionar */
+    sessionStorage.setItem("ag:key",    user.key);
+    sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
+
+    window.location.href = "index.html";
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log
+.env
+node_modules/
+package.json
+package-lock.json
+pdfs/
+baixar-pdfs.bat
+baixar-pdfs.py
+comprimir-pdfs.bat
+instalar-ghostscript.bat
