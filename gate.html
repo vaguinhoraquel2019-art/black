@@ -464,14 +464,14 @@ async function verificaMensagens(nome) {
   const snap = await db.collection("mensagens_cliente")
     .where("para", "==", nome.toLowerCase())
     .where("lida", "==", false)
-    .orderBy("data", "desc")
-    .limit(1)
     .get();
 
   if (snap.empty) return;
 
-  const doc = snap.docs[0];
-  const msg = doc.data();
+  // Pega a mais recente
+  const docs = snap.docs.sort((a,b) => b.data().data - a.data().data);
+  const doc  = docs[0];
+  const msg  = doc.data();
 
   if (msg.tipo === "key") {
     mostraMsgKey(doc.id, msg.keyCode, msg.dias);
@@ -487,8 +487,6 @@ function iniciaListenerMensagens(nome) {
   unsubscribeMsg = db.collection("mensagens_cliente")
     .where("para", "==", nome.toLowerCase())
     .where("lida", "==", false)
-    .orderBy("data", "desc")
-    .limit(1)
     .onSnapshot(snap => {
       snap.docChanges().forEach(change => {
         if (change.type === "added") {

@@ -838,17 +838,24 @@ async function carregaLogsPix() {
     // ── ENVIAR MENSAGEM (valor insuficiente) ──
     for (const btn of lista.querySelectorAll(".btn-enviar-msg")) {
       btn.addEventListener("click", async () => {
-        const nick    = btn.dataset.nick;
+        const nickPix = btn.dataset.nick;
         const contato = btn.dataset.contato;
         const falta   = btn.dataset.falta;
         const dias    = btn.dataset.dias;
+
+        // Pergunta o nome do usuário cadastrado
+        const nomeUsuario = prompt(
+          `Nick no pix: "${nickPix}"\nContato: "${contato}"\n\nDigite o nome de usuário CADASTRADO no site:`,
+          nickPix
+        );
+        if (!nomeUsuario) return;
 
         btn.textContent = "Enviando...";
         btn.disabled = true;
 
         try {
           await db.collection("mensagens_cliente").add({
-            para:    nick.toLowerCase(),
+            para:    nomeUsuario.toLowerCase().trim(),
             tipo:    "valor_insuficiente",
             falta:   parseFloat(falta),
             dias:    parseInt(dias),
