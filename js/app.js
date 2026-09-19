@@ -179,8 +179,8 @@ function cartao(caderno) {
 
   item.querySelector("a").addEventListener("click", (e) => {
     e.preventDefault();
-    const titulo = `${serie.rotulo} — ${nome} — ${caderno.bimestre}º bimestre`;
-    abrirModal(titulo, caderno.url);
+    // Abre em nova aba — PDFs do acervo são grandes demais para iframe
+    window.open(caderno.url, "_blank", "noopener,noreferrer");
   });
 
   return item;
