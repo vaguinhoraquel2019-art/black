@@ -763,7 +763,7 @@ async function carregaLogsPix() {
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem">
           <span class="log-valor">R$ ${valor.toFixed(2)}</span>
           ${!jaEntregue && keyExata
-            ? `<button class="btn-entregar-key" data-id="${doc.id}" data-nick="${d.nick||''}" data-dias="${keyExata.dias}">🔑 ENTREGAR KEY</button>`
+            ? `<button class="btn-entregar-key" data-id="${doc.id}" data-nick="${d.nick||''}" data-contato="${d.contato||''}" data-dias="${keyExata.dias}" data-valor="${valor}">🔑 ENTREGAR KEY</button>`
             : ""
           }
           ${!jaEntregue && !keyExata && keyProx
@@ -784,9 +784,17 @@ async function carregaLogsPix() {
     // ── ENTREGAR KEY ──
     for (const btn of lista.querySelectorAll(".btn-entregar-key")) {
       btn.addEventListener("click", async () => {
-        const id   = btn.dataset.id;
-        const nick = btn.dataset.nick;
-        const dias = parseInt(btn.dataset.dias);
+        const id      = btn.dataset.id;
+        const nickPix = btn.dataset.nick;
+        const contato = btn.dataset.contato;
+        const dias    = parseInt(btn.dataset.dias);
+
+        // Pergunta o nome do usuário cadastrado (pode ser diferente do nick do pix)
+        const nomeUsuario = prompt(
+          `Nick no pix: "${nickPix}"\nContato: "${contato}"\n\nDigite o nome de usuário CADASTRADO no site para enviar a key:`,
+          nickPix
+        );
+        if (!nomeUsuario) return;
 
         // Busca uma key disponível com os dias certos
         const keysSnap = await db.collection("keys")
@@ -799,16 +807,15 @@ async function carregaLogsPix() {
           return;
         }
 
-        const keyDoc = keysSnap.docs[0];
+        const keyDoc  = keysSnap.docs[0];
         const keyCode = keyDoc.id;
 
         btn.textContent = "Enviando...";
         btn.disabled = true;
 
         try {
-          // Salva mensagem para o cliente no Firestore
           await db.collection("mensagens_cliente").add({
-            para:    nick.toLowerCase(),
+            para:    nomeUsuario.toLowerCase().trim(),
             tipo:    "key",
             keyCode: keyCode,
             dias:    dias,
@@ -816,7 +823,6 @@ async function carregaLogsPix() {
             lida:    false
           });
 
-          // Marca log como entregue
           await db.collection("logs_pix").doc(id).update({ keyEntregue: true, keyCode });
 
           btn.textContent = "✅ Entregue!";

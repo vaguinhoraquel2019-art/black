@@ -404,6 +404,7 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
 
     // Verifica mensagens antes de redirecionar
     await verificaMensagens(nome);
+    iniciaListenerMensagens(nome);
     if (!document.getElementById("painel-msg").classList.contains("ativo")) {
       window.location.href = "index.html";
     }
@@ -448,6 +449,9 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
     sessionStorage.setItem("ag:key",    user.key);
     sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
 
+    // Inicia listener em tempo real
+    iniciaListenerMensagens(nome);
+
     // Só redireciona se não houver mensagem pendente
     if (!document.getElementById("painel-msg").classList.contains("ativo")) {
       window.location.href = "index.html";
@@ -474,6 +478,30 @@ async function verificaMensagens(nome) {
   } else if (msg.tipo === "valor_insuficiente") {
     mostraMsgInsuficiente(doc.id, msg.falta, msg.dias);
   }
+}
+
+/* ── Listener em tempo real para mensagens novas ── */
+let unsubscribeMsg = null;
+function iniciaListenerMensagens(nome) {
+  if (unsubscribeMsg) return;
+  unsubscribeMsg = db.collection("mensagens_cliente")
+    .where("para", "==", nome.toLowerCase())
+    .where("lida", "==", false)
+    .orderBy("data", "desc")
+    .limit(1)
+    .onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if (change.type === "added") {
+          const doc = change.doc;
+          const msg = doc.data();
+          if (msg.tipo === "key") {
+            mostraMsgKey(doc.id, msg.keyCode, msg.dias);
+          } else if (msg.tipo === "valor_insuficiente") {
+            mostraMsgInsuficiente(doc.id, msg.falta, msg.dias);
+          }
+        }
+      });
+    });
 }
 
 function mostraMsgKey(docId, keyCode, dias) {
