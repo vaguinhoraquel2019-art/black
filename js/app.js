@@ -123,17 +123,9 @@ function abrirModal(nome, url) {
     return;
   }
 
-  let src = url;
-  const driveMatch = url.match(/\/file\/d\/([^/]+)\//);
-  if (driveMatch) {
-    const id = driveMatch[1];
-    src = "https://docs.google.com/viewer?embedded=true&url=" +
-          encodeURIComponent("https://drive.google.com/uc?export=download&id=" + id);
-  } else if (url.match(/\.pdf(\?|$)/i)) {
-    src = "https://docs.google.com/viewer?embedded=true&url=" + encodeURIComponent(url);
-  }
+  // Links do Drive com /preview abrem direto no iframe
   document.getElementById("modal-titulo").textContent = nome;
-  document.getElementById("modal-iframe").src = src;
+  document.getElementById("modal-iframe").src = url;
   const modal = document.getElementById("modal-viewer");
   modal.style.display = "flex";
   document.body.style.overflow = "hidden";
@@ -179,8 +171,12 @@ function cartao(caderno) {
 
   item.querySelector("a").addEventListener("click", (e) => {
     e.preventDefault();
-    // Abre em nova aba — PDFs do acervo são grandes demais para iframe
-    window.open(caderno.url, "_blank", "noopener,noreferrer");
+    const titulo = `${serie.rotulo} — ${nome} — ${caderno.bimestre}º bimestre`;
+    if (caderno.url.includes("drive.google.com")) {
+      abrirModal(titulo, caderno.url);
+    } else {
+      window.open(caderno.url, "_blank", "noopener,noreferrer");
+    }
   });
 
   return item;
