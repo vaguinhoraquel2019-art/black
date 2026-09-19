@@ -261,6 +261,21 @@
     .log-contato { color: #04ff00; font-size: 0.75rem; font-family: monospace; }
     .log-data { color: #555; font-size: 0.7rem; }
     .log-valor { color: #04ff00; font-weight: 700; white-space: nowrap; }
+    .btn-entregar-key {
+      background: #04ff00; color: #000; border: none; border-radius: 0.4rem;
+      padding: 0.4rem 0.75rem; font: inherit; font-size: 0.75rem; font-weight: 800;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-entregar-key:hover { background: #00cc00; }
+    .btn-entregar-key:disabled { background: #555; color: #999; cursor: not-allowed; }
+    .btn-enviar-msg {
+      background: #f59e0b; color: #000; border: none; border-radius: 0.4rem;
+      padding: 0.4rem 0.75rem; font: inherit; font-size: 0.75rem; font-weight: 800;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-enviar-msg:hover { background: #d97706; }
+    .btn-enviar-msg:disabled { background: #555; color: #999; cursor: not-allowed; }
+    .log-key-info { color: #04ff00; font-size: 0.7rem; font-family: monospace; margin-top: 0.2rem; }
 
     /* usuários */
     .user-card {
@@ -436,6 +451,12 @@
       <div id="lista-usuarios"><p class="vazio">Carregando...</p></div>
     </div>
 
+    <!-- Reembolsos -->
+    <div class="card">
+      <h2>Solicitações de Reembolso</h2>
+      <div id="lista-reembolsos"><p class="vazio">Carregando...</p></div>
+    </div>
+
   </div>
 </div>
 
@@ -461,6 +482,7 @@ document.getElementById("btn-login").addEventListener("click", () => {
     iniciaListenerPix();
     carregaLinksApostilas();
     carregaUsuarios();
+    carregaReembolsos();
   } else {
     document.getElementById("erro-login").classList.add("ativo");
   }
@@ -678,6 +700,30 @@ async function carregaKeysUsadas() {
   }
 }
 
+/* ══════════════════════════════════════════
+   TABELA DE PREÇOS DAS KEYS
+   ══════════════════════════════════════════ */
+const TABELA_KEYS = [
+  { dias: 1,  valor: 3  },
+  { dias: 3,  valor: 5  },
+  { dias: 5,  valor: 7  },
+  { dias: 7,  valor: 10 },
+  { dias: 15, valor: 15 },
+  { dias: 30, valor: 23 },
+];
+
+function keyParaValor(valor) {
+  // Retorna a key exata se o valor bater, ou null
+  return TABELA_KEYS.find(k => k.valor <= valor) 
+    ? TABELA_KEYS.slice().reverse().find(k => k.valor <= valor)
+    : null;
+}
+
+function proxKey(valor) {
+  // Retorna a key mais próxima acima do valor pago
+  return TABELA_KEYS.find(k => k.valor > valor) || null;
+}
+
 async function carregaLogsPix() {
   const lista = document.getElementById("lista-logs-pix");
   lista.innerHTML = "<p class='vazio'>Carregando...</p>";
@@ -694,9 +740,16 @@ async function carregaLogsPix() {
     lista.innerHTML = "";
 
     for (const doc of snap.docs) {
-      const d    = doc.data();
-      const data = new Date(d.data).toLocaleString("pt-BR");
-      totalGeral += d.valor || 0;
+      const d      = doc.data();
+      const data   = new Date(d.data).toLocaleString("pt-BR");
+      const valor  = d.valor || 0;
+      totalGeral  += valor;
+
+      // Determina qual key o valor cobre
+      const keyExata = keyParaValor(valor);
+      const keyProx  = proxKey(valor);
+      const falta    = keyProx ? (keyProx.valor - valor).toFixed(2) : null;
+      const jaEntregue = d.keyEntregue || false;
 
       const item = document.createElement("div");
       item.className = "log-item";
@@ -705,9 +758,18 @@ async function carregaLogsPix() {
           <span class="log-nick">${d.nick || "—"}</span>
           <span class="log-contato">${d.contato || "sem contato"}</span>
           <span class="log-data">${data}</span>
+          ${jaEntregue ? '<span class="log-key-info">✅ Key entregue</span>' : ""}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem">
-          <span class="log-valor">R$ ${(d.valor || 0).toFixed(2)}</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem">
+          <span class="log-valor">R$ ${valor.toFixed(2)}</span>
+          ${!jaEntregue && keyExata
+            ? `<button class="btn-entregar-key" data-id="${doc.id}" data-nick="${d.nick||''}" data-dias="${keyExata.dias}">🔑 ENTREGAR KEY</button>`
+            : ""
+          }
+          ${!jaEntregue && !keyExata && keyProx
+            ? `<button class="btn-enviar-msg" data-id="${doc.id}" data-nick="${d.nick||''}" data-contato="${d.contato||''}" data-falta="${falta}" data-dias="${keyProx.dias}">💬 ENVIAR MENSAGEM</button>`
+            : ""
+          }
           <button class="btn-deletar" data-id="${doc.id}" title="Deletar">✕</button>
         </div>
       `;
@@ -719,12 +781,94 @@ async function carregaLogsPix() {
     total.innerHTML = `<span style="color:#aaa">Total gerado</span><span style="color:#04ff00">R$ ${totalGeral.toFixed(2)}</span>`;
     lista.append(total);
 
+    // ── ENTREGAR KEY ──
+    for (const btn of lista.querySelectorAll(".btn-entregar-key")) {
+      btn.addEventListener("click", async () => {
+        const id   = btn.dataset.id;
+        const nick = btn.dataset.nick;
+        const dias = parseInt(btn.dataset.dias);
+
+        // Busca uma key disponível com os dias certos
+        const keysSnap = await db.collection("keys")
+          .where("usada", "==", false)
+          .where("dias", "==", dias)
+          .limit(1).get();
+
+        if (keysSnap.empty) {
+          alert(`Não há keys de ${dias} dia(s) disponíveis. Gere uma primeiro.`);
+          return;
+        }
+
+        const keyDoc = keysSnap.docs[0];
+        const keyCode = keyDoc.id;
+
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+
+        try {
+          // Salva mensagem para o cliente no Firestore
+          await db.collection("mensagens_cliente").add({
+            para:    nick.toLowerCase(),
+            tipo:    "key",
+            keyCode: keyCode,
+            dias:    dias,
+            data:    Date.now(),
+            lida:    false
+          });
+
+          // Marca log como entregue
+          await db.collection("logs_pix").doc(id).update({ keyEntregue: true, keyCode });
+
+          btn.textContent = "✅ Entregue!";
+          setTimeout(() => carregaLogsPix(), 1500);
+        } catch(e) {
+          alert("Erro: " + e.message);
+          btn.textContent = "🔑 ENTREGAR KEY";
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // ── ENVIAR MENSAGEM (valor insuficiente) ──
+    for (const btn of lista.querySelectorAll(".btn-enviar-msg")) {
+      btn.addEventListener("click", async () => {
+        const nick    = btn.dataset.nick;
+        const contato = btn.dataset.contato;
+        const falta   = btn.dataset.falta;
+        const dias    = btn.dataset.dias;
+
+        btn.textContent = "Enviando...";
+        btn.disabled = true;
+
+        try {
+          await db.collection("mensagens_cliente").add({
+            para:    nick.toLowerCase(),
+            tipo:    "valor_insuficiente",
+            falta:   parseFloat(falta),
+            dias:    parseInt(dias),
+            contato: contato,
+            data:    Date.now(),
+            lida:    false
+          });
+
+          btn.textContent = "✅ Enviada!";
+          setTimeout(() => { btn.textContent = "💬 ENVIAR MENSAGEM"; btn.disabled = false; }, 2000);
+        } catch(e) {
+          alert("Erro: " + e.message);
+          btn.textContent = "💬 ENVIAR MENSAGEM";
+          btn.disabled = false;
+        }
+      });
+    }
+
+    // ── DELETAR ──
     for (const btn of lista.querySelectorAll(".btn-deletar")) {
       btn.addEventListener("click", async () => {
         await db.collection("logs_pix").doc(btn.dataset.id).delete();
         carregaLogsPix();
       });
     }
+
   } catch(e) {
     lista.innerHTML = `<p class='vazio'>Erro: ${e.message}</p>`;
   }
@@ -836,6 +980,42 @@ function filtrarLinks(q) {
     ? APOSTILAS_ADMIN.filter(a => a.nome.toLowerCase().includes(termo))
     : APOSTILAS_ADMIN;
   renderizaLinks(filtrado);
+}
+
+/* ══════════════════════════════════════════
+   REEMBOLSOS
+   ══════════════════════════════════════════ */
+async function carregaReembolsos() {
+  const lista = document.getElementById("lista-reembolsos");
+  lista.innerHTML = "<p class='vazio'>Carregando...</p>";
+  try {
+    const snap = await db.collection("solicitacoes_reembolso").orderBy("data", "desc").get();
+    if (snap.empty) { lista.innerHTML = "<p class='vazio'>Nenhuma solicitação.</p>"; return; }
+    lista.innerHTML = "";
+    for (const doc of snap.docs) {
+      const d    = doc.data();
+      const data = new Date(d.data).toLocaleString("pt-BR");
+      const item = document.createElement("div");
+      item.className = "log-item";
+      item.innerHTML = `
+        <div class="log-info">
+          <span class="log-nick">🔴 ${d.usuario}</span>
+          <span class="log-contato">Key de ${d.dias} dia${d.dias > 1 ? "s" : ""} — Falta R$ ${parseFloat(d.falta).toFixed(2)}</span>
+          <span class="log-data">${data}</span>
+        </div>
+        <button class="btn-deletar" data-id="${doc.id}" title="Resolver">✕</button>
+      `;
+      lista.append(item);
+    }
+    for (const btn of lista.querySelectorAll(".btn-deletar")) {
+      btn.addEventListener("click", async () => {
+        await db.collection("solicitacoes_reembolso").doc(btn.dataset.id).delete();
+        carregaReembolsos();
+      });
+    }
+  } catch(e) {
+    lista.innerHTML = `<p class='vazio'>Erro: ${e.message}</p>`;
+  }
 }
 
 /* ══════════════════════════════════════════

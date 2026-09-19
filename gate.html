@@ -178,6 +178,43 @@
     .erro.ativo { display: block; }
     .form { display: flex; flex-direction: column; gap: 0.75rem; }
     .hidden { display: none; }
+
+    /* ── painel de mensagem do admin ── */
+    #painel-msg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(0,0,0,0.85);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #painel-msg.ativo { display: flex; }
+    .msg-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 24rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+    .msg-titulo { font-size: 1.1rem; font-weight: 800; }
+    .msg-texto  { font-size: 0.9rem; color: #333; line-height: 1.6; }
+    .msg-key    { font-family: monospace; font-size: 1rem; font-weight: 700;
+                  background: #f0fdf4; border: 1px solid #86efac;
+                  border-radius: 0.5rem; padding: 0.75rem 1rem; color: #16a34a;
+                  word-break: break-all; }
+    .msg-btns   { display: flex; gap: 0.75rem; }
+    .msg-btn    { flex: 1; padding: 0.75rem; border: none; border-radius: 0.5rem;
+                  font: inherit; font-size: 0.875rem; font-weight: 700; cursor: pointer; }
+    .msg-btn.verde { background: #16a34a; color: #fff; }
+    .msg-btn.verde:hover { background: #15803d; }
+    .msg-btn.cinza { background: #e5e7eb; color: #374151; }
+    .msg-btn.cinza:hover { background: #d1d5db; }
   </style>
 </head>
 <body>
@@ -365,7 +402,11 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
     sessionStorage.setItem("ag:key", user.key);
     sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
 
-    window.location.href = "index.html";
+    // Verifica mensagens antes de redirecionar
+    await verificaMensagens(nome);
+    if (!document.getElementById("painel-msg").classList.contains("ativo")) {
+      window.location.href = "index.html";
+    }
 
   } catch(e) {
     mostraErro("Erro: " + e.message);
@@ -400,13 +441,116 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
     const agora = Date.now();
     if (!user.isLife && user.expira !== null && user.expira < agora) return;
 
+    /* Verifica mensagens pendentes ANTES de redirecionar */
+    await verificaMensagens(nome);
+
     /* Popula sessionStorage ANTES de redirecionar */
     sessionStorage.setItem("ag:key",    user.key);
     sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
 
-    window.location.href = "index.html";
+    // Só redireciona se não houver mensagem pendente
+    if (!document.getElementById("painel-msg").classList.contains("ativo")) {
+      window.location.href = "index.html";
+    }
   } catch(e) {}
 })();
+
+/* ── Verificar mensagens pendentes do admin ── */
+async function verificaMensagens(nome) {
+  const snap = await db.collection("mensagens_cliente")
+    .where("para", "==", nome.toLowerCase())
+    .where("lida", "==", false)
+    .orderBy("data", "desc")
+    .limit(1)
+    .get();
+
+  if (snap.empty) return;
+
+  const doc = snap.docs[0];
+  const msg = doc.data();
+
+  if (msg.tipo === "key") {
+    mostraMsgKey(doc.id, msg.keyCode, msg.dias);
+  } else if (msg.tipo === "valor_insuficiente") {
+    mostraMsgInsuficiente(doc.id, msg.falta, msg.dias);
+  }
+}
+
+function mostraMsgKey(docId, keyCode, dias) {
+  const painel = document.getElementById("painel-msg");
+  const card   = document.getElementById("msg-card-conteudo");
+  card.innerHTML = `
+    <div class="msg-titulo">🔑 SUA KEY FOI LIBERADA!</div>
+    <div class="msg-texto">Sua Key de <strong>${dias} dia${dias > 1 ? "s" : ""}</strong>:</div>
+    <div class="msg-key">${keyCode}</div>
+    <div class="msg-texto" style="font-size:0.75rem;color:#888">Copie e use no campo de registro.</div>
+    <button class="msg-btn verde" id="btn-copiar-key">📋 Copiar Key</button>
+    <button class="msg-btn cinza" id="btn-fechar-msg">Fechar</button>
+  `;
+  painel.classList.add("ativo");
+
+  document.getElementById("btn-copiar-key").addEventListener("click", async () => {
+    await navigator.clipboard.writeText(keyCode).catch(() => {});
+    document.getElementById("btn-copiar-key").textContent = "✅ Copiado!";
+  });
+
+  document.getElementById("btn-fechar-msg").addEventListener("click", async () => {
+    await db.collection("mensagens_cliente").doc(docId).update({ lida: true });
+    painel.classList.remove("ativo");
+    window.location.href = "index.html";
+  });
+}
+
+function mostraMsgInsuficiente(docId, falta, dias) {
+  const painel = document.getElementById("painel-msg");
+  const card   = document.getElementById("msg-card-conteudo");
+  card.innerHTML = `
+    <div class="msg-titulo">⚠️ Valor insuficiente</div>
+    <div class="msg-texto">
+      Você enviou um valor menor que o necessário.<br><br>
+      Falta <strong>R$ ${parseFloat(falta).toFixed(2)}</strong> para completar a Key de
+      <strong>${dias} dia${dias > 1 ? "s" : ""}</strong>.
+    </div>
+    <div class="msg-btns">
+      <button class="msg-btn cinza" id="btn-reembolso">💰 REEMBOLSO</button>
+      <button class="msg-btn verde" id="btn-pagar-resto">💳 PAGAR</button>
+    </div>
+  `;
+  painel.classList.add("ativo");
+
+  document.getElementById("btn-reembolso").addEventListener("click", async () => {
+    const nome = localStorage.getItem("ag:nome") || "desconhecido";
+    await db.collection("solicitacoes_reembolso").add({
+      usuario: nome,
+      falta:   parseFloat(falta),
+      dias:    dias,
+      data:    Date.now()
+    });
+    await db.collection("mensagens_cliente").doc(docId).update({ lida: true });
+    card.innerHTML = `
+      <div class="msg-titulo">✅ Reembolso solicitado</div>
+      <div class="msg-texto">Seu pedido foi registrado.<br>Aguarde até 24 horas.</div>
+      <button class="msg-btn cinza" id="btn-fechar-remb">Fechar</button>
+    `;
+    document.getElementById("btn-fechar-remb").addEventListener("click", () => {
+      painel.classList.remove("ativo");
+    });
+  });
+
+  document.getElementById("btn-pagar-resto").addEventListener("click", async () => {
+    await db.collection("mensagens_cliente").doc(docId).update({ lida: true });
+    painel.classList.remove("ativo");
+    // Abre pix com valor pré-preenchido
+    const url = `pix/?valor=${parseFloat(falta).toFixed(2)}`;
+    window.location.href = url;
+  });
+}
 </script>
+
+<!-- Painel de mensagens do admin -->
+<div id="painel-msg">
+  <div class="msg-card" id="msg-card-conteudo"></div>
+</div>
+
 </body>
 </html>
