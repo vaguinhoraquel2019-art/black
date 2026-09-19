@@ -117,6 +117,12 @@ function filtra() {
 }
 
 function abrirModal(nome, url) {
+  // Links do acervo da Secretaria não permitem iframe — abre em nova aba
+  if (url.includes("acervocmsp") || url.includes("educacao.sp.gov.br")) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
   let src = url;
   const driveMatch = url.match(/\/file\/d\/([^/]+)\//);
   if (driveMatch) {
