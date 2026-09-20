@@ -215,6 +215,55 @@
     .msg-btn.verde:hover { background: #15803d; }
     .msg-btn.cinza { background: #e5e7eb; color: #374151; }
     .msg-btn.cinza:hover { background: #d1d5db; }
+
+    /* tela sem key */
+    #tela-sem-key {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 998;
+      background: #04ff00;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #tela-sem-key.ativo { display: flex; }
+    .sem-key-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem 1.75rem;
+      width: 100%;
+      max-width: 24rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+    .sem-key-titulo { font-size: 1.1rem; font-weight: 800; }
+    .sem-key-texto  { font-size: 0.875rem; color: #555; line-height: 1.6; }
+    .sem-key-nome   { font-size: 0.8rem; color: #999; }
+    .btn-pague-key  {
+      display: block; width: 100%; padding: 0.9rem;
+      background: #000; color: #04ff00; border: none;
+      border-radius: 0.5rem; font: inherit; font-size: 0.9375rem;
+      font-weight: 800; letter-spacing: 0.06em; cursor: pointer;
+      text-decoration: none; text-align: center;
+    }
+    .btn-pague-key:hover { background: #222; }
+    .sem-key-ou { color: #aaa; font-size: 0.8rem; }
+    .btn-ja-tenho-key {
+      background: transparent; border: 1px solid #ddd;
+      border-radius: 0.5rem; padding: 0.7rem; font: inherit;
+      font-size: 0.875rem; color: #555; cursor: pointer; width: 100%;
+    }
+    .btn-ja-tenho-key:hover { background: #f5f5f5; }
+    .input-key-manual {
+      width: 100%; background: #f5f5f5; border: 1px solid #ddd;
+      border-radius: 0.5rem; padding: 0.75rem 1rem; font: inherit;
+      font-size: 0.875rem; outline: none; text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-key-manual:focus { border-color: #000; }
   </style>
 </head>
 <body>
@@ -278,7 +327,6 @@
   <div class="form hidden" id="form-registrar">
     <input type="text" id="r-nome" placeholder="Nome" autocomplete="off" spellcheck="false">
     <input type="password" id="r-senha" placeholder="Senha">
-    <input type="text" id="r-key" placeholder="Key de acesso" autocomplete="off" spellcheck="false">
     <button class="btn-principal" id="btn-registrar">Registrar</button>
   </div>
 
@@ -317,12 +365,11 @@ function hashSenha(senha) {
 document.getElementById("btn-registrar").addEventListener("click", async () => {
   const nome  = document.getElementById("r-nome").value.trim();
   const senha = document.getElementById("r-senha").value;
-  const key   = document.getElementById("r-key").value.trim().toUpperCase();
   const btn   = document.getElementById("btn-registrar");
 
-  if (!nome || !senha || !key) { mostraErro("Preencha todos os campos."); return; }
+  if (!nome || !senha) { mostraErro("Preencha todos os campos."); return; }
 
-  btn.textContent = "Verificando...";
+  btn.textContent = "Criando conta...";
   btn.disabled = true;
 
   try {
@@ -330,37 +377,22 @@ document.getElementById("btn-registrar").addEventListener("click", async () => {
     const nomeDoc = await db.collection("usuarios").doc(nome.toLowerCase()).get();
     if (nomeDoc.exists) { mostraErro("Esse nome já está em uso."); return; }
 
-    // Verifica a key
-    const keyDoc = await db.collection("keys").doc(key).get();
-    if (!keyDoc.exists) { mostraErro("Key inválida."); return; }
-
-    const dados   = keyDoc.data();
-    const agora   = Date.now();
-    const isLife  = dados.dias === 0 || dados.expira === null;
-
-    if (dados.usada) { mostraErro("Essa key já foi usada."); return; }
-
-    // Ativa a key
-    const expira = isLife ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
-    await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
-
-    // Cria o usuário
+    // Cria o usuário SEM key — key será entregue pelo admin
     await db.collection("usuarios").doc(nome.toLowerCase()).set({
       nome,
       senha: hashSenha(senha),
-      key,
-      expira,
-      isLife,
-      criado: agora
+      key:    null,
+      expira: null,
+      isLife: false,
+      criado: Date.now()
     });
 
-    // Salva sessão
+    // Salva sessão local
     localStorage.setItem("ag:nome", nome.toLowerCase());
     localStorage.setItem("ag:hash", hashSenha(senha));
-    sessionStorage.setItem("ag:key", key);
-    sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(expira));
 
-    window.location.href = "index.html";
+    // Mostra tela de espera (sem redirecionar)
+    mostraTelaSemKey(nome.toLowerCase());
 
   } catch(e) {
     mostraErro("Erro: " + e.message);
@@ -390,15 +422,23 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
 
     const agora = Date.now();
 
-    // Verifica expiração (lifetime nunca expira)
+    // Salva sessão local
+    localStorage.setItem("ag:nome", nome);
+    localStorage.setItem("ag:hash", hashSenha(senha));
+
+    // Se não tem key ainda → tela de espera
+    if (!user.key) {
+      mostraTelaSemKey(nome);
+      return;
+    }
+
+    // Verifica expiração
     if (!user.isLife && user.expira !== null && user.expira < agora) {
       mostraErro("Seu acesso expirou.");
       return;
     }
 
-    // Salva sessão
-    localStorage.setItem("ag:nome", nome);
-    localStorage.setItem("ag:hash", hashSenha(senha));
+    // Salva sessão completa
     sessionStorage.setItem("ag:key", user.key);
     sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
 
@@ -418,7 +458,7 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
 });
 
 /* Enter nos campos */
-["e-senha","r-key"].forEach(id => {
+["e-senha", "r-senha"].forEach(id => {
   document.getElementById(id)?.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       const isReg = !document.getElementById("form-registrar").classList.contains("hidden");
@@ -440,6 +480,13 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
     const user = userDoc.data();
     if (user.senha !== hash) return;
     const agora = Date.now();
+
+    // Se não tem key → tela de espera
+    if (!user.key) {
+      mostraTelaSemKey(nome);
+      return;
+    }
+
     if (!user.isLife && user.expira !== null && user.expira < agora) return;
 
     /* Verifica mensagens pendentes ANTES de redirecionar */
@@ -458,6 +505,62 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
     }
   } catch(e) {}
 })();
+
+/* ── Tela de espera sem key ── */
+function mostraTelaSemKey(nome) {
+  document.getElementById("sem-key-usuario").textContent = "Conta: " + nome;
+  document.getElementById("tela-sem-key").classList.add("ativo");
+  // Inicia listener para receber key do admin em tempo real
+  iniciaListenerMensagens(nome);
+}
+
+document.getElementById("btn-mostrar-key").addEventListener("click", () => {
+  const form = document.getElementById("form-key-manual");
+  form.classList.toggle("hidden");
+  form.style.display = form.classList.contains("hidden") ? "none" : "flex";
+});
+
+document.getElementById("btn-ativar-key").addEventListener("click", async () => {
+  const key  = document.getElementById("input-key-manual").value.trim().toUpperCase();
+  const erro = document.getElementById("erro-key");
+  const btn  = document.getElementById("btn-ativar-key");
+  const nome = localStorage.getItem("ag:nome");
+
+  if (!key) { erro.textContent = "Digite a key."; erro.style.display = "block"; return; }
+
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
+  erro.style.display = "none";
+
+  try {
+    const keyDoc = await db.collection("keys").doc(key).get();
+    if (!keyDoc.exists) { erro.textContent = "Key inválida."; erro.style.display = "block"; return; }
+
+    const dados  = keyDoc.data();
+    const agora  = Date.now();
+    const isLife = dados.dias === 0 || dados.expira === null;
+
+    if (dados.usada) { erro.textContent = "Essa key já foi usada."; erro.style.display = "block"; return; }
+
+    const expira = isLife ? null : agora + dados.dias * 24 * 60 * 60 * 1000;
+
+    await db.collection("keys").doc(key).update({ usada: true, expira, primeiroUso: agora });
+    await db.collection("usuarios").doc(nome).update({ key, expira, isLife });
+
+    sessionStorage.setItem("ag:key",    key);
+    sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(expira));
+
+    document.getElementById("tela-sem-key").classList.remove("ativo");
+    window.location.href = "index.html";
+
+  } catch(e) {
+    erro.textContent = "Erro: " + e.message;
+    erro.style.display = "block";
+  }
+
+  btn.textContent = "Ativar Key";
+  btn.disabled = false;
+});
 
 /* ── Verificar mensagens pendentes do admin ── */
 async function verificaMensagens(nome) {
@@ -505,22 +608,33 @@ function iniciaListenerMensagens(nome) {
 function mostraMsgKey(docId, keyCode, dias) {
   const painel = document.getElementById("painel-msg");
   const card   = document.getElementById("msg-card-conteudo");
+  const nome   = localStorage.getItem("ag:nome");
+
+  // Ativa a key automaticamente na conta
+  (async () => {
+    try {
+      const agora  = Date.now();
+      const isLife = dias === 0;
+      const expira = isLife ? null : agora + dias * 24 * 60 * 60 * 1000;
+      await db.collection("keys").doc(keyCode).update({ usada: true, expira, primeiroUso: agora }).catch(()=>{});
+      await db.collection("usuarios").doc(nome).update({ key: keyCode, expira, isLife });
+      sessionStorage.setItem("ag:key",    keyCode);
+      sessionStorage.setItem("ag:expira", isLife ? "99999999999999" : String(expira));
+    } catch(e) {}
+  })();
+
   card.innerHTML = `
     <div class="msg-titulo">🔑 SUA KEY FOI LIBERADA!</div>
     <div class="msg-texto">Sua Key de <strong>${dias} dia${dias > 1 ? "s" : ""}</strong>:</div>
     <div class="msg-key">${keyCode}</div>
-    <div class="msg-texto" style="font-size:0.75rem;color:#888">Copie e use no campo de registro.</div>
-    <button class="msg-btn verde" id="btn-copiar-key">📋 Copiar Key</button>
-    <button class="msg-btn cinza" id="btn-fechar-msg">Fechar</button>
+    <div class="msg-texto" style="font-size:0.75rem;color:#888">Sua conta já foi ativada automaticamente!</div>
+    <button class="msg-btn verde" id="btn-entrar-site">🚀 Entrar no site</button>
   `;
+  // Fecha tela de espera se estiver aberta
+  document.getElementById("tela-sem-key").classList.remove("ativo");
   painel.classList.add("ativo");
 
-  document.getElementById("btn-copiar-key").addEventListener("click", async () => {
-    await navigator.clipboard.writeText(keyCode).catch(() => {});
-    document.getElementById("btn-copiar-key").textContent = "✅ Copiado!";
-  });
-
-  document.getElementById("btn-fechar-msg").addEventListener("click", async () => {
+  document.getElementById("btn-entrar-site").addEventListener("click", async () => {
     await db.collection("mensagens_cliente").doc(docId).update({ lida: true });
     painel.classList.remove("ativo");
     window.location.href = "index.html";
@@ -566,12 +680,30 @@ function mostraMsgInsuficiente(docId, falta, dias) {
   document.getElementById("btn-pagar-resto").addEventListener("click", async () => {
     await db.collection("mensagens_cliente").doc(docId).update({ lida: true });
     painel.classList.remove("ativo");
-    // Abre pix com valor pré-preenchido
-    const url = `pix/?valor=${parseFloat(falta).toFixed(2)}`;
-    window.location.href = url;
+    window.open("pix/", "_blank");
   });
 }
 </script>
+
+<!-- Tela sem key -->
+<div id="tela-sem-key">
+  <div class="sem-key-card">
+    <div class="sem-key-titulo">🔑 Você precisa de uma Key</div>
+    <div class="sem-key-nome" id="sem-key-usuario"></div>
+    <div class="sem-key-texto">
+      Para acessar o site, você precisa de uma key.<br>
+      Escolha um plano, faça o pix e aguarde a liberação.
+    </div>
+    <a class="btn-pague-key" href="pix/" target="_blank">PAGUE AQUI</a>
+    <div class="sem-key-ou">— ou se já tem uma key —</div>
+    <button class="btn-ja-tenho-key" id="btn-mostrar-key">Já tenho uma Key</button>
+    <div id="form-key-manual" class="hidden" style="display:flex;flex-direction:column;gap:0.5rem;">
+      <input class="input-key-manual" type="text" id="input-key-manual" placeholder="XXXX-XXXX-XXXX">
+      <button class="btn-principal" id="btn-ativar-key">Ativar Key</button>
+    </div>
+    <p class="erro" id="erro-key" style="font-size:0.8rem;color:#c00;display:none;"></p>
+  </div>
+</div>
 
 <!-- Painel de mensagens do admin -->
 <div id="painel-msg">
