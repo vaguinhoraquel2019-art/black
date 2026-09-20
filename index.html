@@ -20,37 +20,10 @@
   <link rel="stylesheet" href="css/estilo.css">
 
   <!-- Proteção: exige key válida -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
   <script>
-    (async function() {
-      let key    = sessionStorage.getItem("ag:key");
-      let expira = parseInt(sessionStorage.getItem("ag:expira") || "0");
-
-      /* Fallback: tenta reconstruir sessão pelo localStorage */
-      if (!key || Date.now() > expira) {
-        const nome = localStorage.getItem("ag:nome");
-        const hash = localStorage.getItem("ag:hash");
-        if (nome && hash) {
-          try {
-            firebase.initializeApp(FIREBASE_CONFIG);
-          } catch(e) {}
-          const db      = firebase.firestore();
-          const userDoc = await db.collection("usuarios").doc(nome).get();
-          if (userDoc.exists) {
-            const user  = userDoc.data();
-            const agora = Date.now();
-            if (user.senha === hash && (user.isLife || !user.expira || user.expira > agora)) {
-              key    = user.key;
-              expira = user.isLife ? 99999999999999 : user.expira;
-              sessionStorage.setItem("ag:key",    key);
-              sessionStorage.setItem("ag:expira", String(expira));
-            }
-          }
-        }
-      }
-
+    (function() {
+      const key    = sessionStorage.getItem("ag:key");
+      const expira = parseInt(sessionStorage.getItem("ag:expira") || "0");
       if (!key || Date.now() > expira) {
         window.location.replace("gate.html");
       }

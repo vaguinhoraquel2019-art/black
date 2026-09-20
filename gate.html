@@ -413,9 +413,9 @@ document.getElementById("btn-registrar").addEventListener("click", async () => {
       criado: Date.now()
     });
 
-    // Salva sessão local
-    localStorage.setItem("ag:nome", nome.toLowerCase());
-    localStorage.setItem("ag:hash", hashSenha(senha));
+    // Salva só na sessão atual (some quando fechar o browser)
+    sessionStorage.setItem("ag:nome", nome.toLowerCase());
+    sessionStorage.setItem("ag:hash", hashSenha(senha));
 
     // Mostra tela de espera (sem redirecionar)
     mostraTelaSemKey(nome.toLowerCase());
@@ -448,9 +448,9 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
 
     const agora = Date.now();
 
-    // Salva sessão local
-    localStorage.setItem("ag:nome", nome);
-    localStorage.setItem("ag:hash", hashSenha(senha));
+    // Salva só na sessão atual (some quando fechar o browser)
+    sessionStorage.setItem("ag:nome", nome);
+    sessionStorage.setItem("ag:hash", hashSenha(senha));
 
     // Se não tem key ainda → tela de espera
     if (!user.key) {
@@ -494,43 +494,7 @@ document.getElementById("btn-entrar").addEventListener("click", async () => {
   });
 });
 
-/* Login automático se já tem sessão salva */
-(async function autoLogin() {
-  const nome = localStorage.getItem("ag:nome");
-  const hash = localStorage.getItem("ag:hash");
-  if (!nome || !hash) return;
-
-  try {
-    const userDoc = await db.collection("usuarios").doc(nome).get();
-    if (!userDoc.exists) return;
-    const user = userDoc.data();
-    if (user.senha !== hash) return;
-    const agora = Date.now();
-
-    // Se não tem key → tela de espera
-    if (!user.key) {
-      mostraTelaSemKey(nome);
-      return;
-    }
-
-    if (!user.isLife && user.expira !== null && user.expira < agora) return;
-
-    /* Verifica mensagens pendentes ANTES de redirecionar */
-    await verificaMensagens(nome);
-
-    /* Popula sessionStorage ANTES de redirecionar */
-    sessionStorage.setItem("ag:key",    user.key);
-    sessionStorage.setItem("ag:expira", user.isLife ? "99999999999999" : String(user.expira));
-
-    // Inicia listener em tempo real
-    iniciaListenerMensagens(nome);
-
-    // Só redireciona se não houver mensagem pendente
-    if (!document.getElementById("painel-msg").classList.contains("ativo")) {
-      window.location.href = "index.html";
-    }
-  } catch(e) {}
-})();
+/* Sem login automático — sempre pede usuario e senha ao abrir */
 
 /* ── Tela de espera sem key ── */
 function mostraTelaSemKey(nome) {
@@ -550,7 +514,7 @@ document.getElementById("btn-ativar-key").addEventListener("click", async () => 
   const key  = document.getElementById("input-key-manual").value.trim().toUpperCase();
   const erro = document.getElementById("erro-key");
   const btn  = document.getElementById("btn-ativar-key");
-  const nome = localStorage.getItem("ag:nome");
+  const nome = sessionStorage.getItem("ag:nome");
 
   if (!key) { erro.textContent = "Digite a key."; erro.style.display = "block"; return; }
 
@@ -634,7 +598,7 @@ function iniciaListenerMensagens(nome) {
 function mostraMsgKey(docId, keyCode, dias) {
   const painel = document.getElementById("painel-msg");
   const card   = document.getElementById("msg-card-conteudo");
-  const nome   = localStorage.getItem("ag:nome");
+  const nome   = sessionStorage.getItem("ag:nome");
 
   // Ativa a key automaticamente na conta
   (async () => {
@@ -685,7 +649,7 @@ function mostraMsgInsuficiente(docId, falta, dias) {
   painel.classList.add("ativo");
 
   document.getElementById("btn-reembolso").addEventListener("click", async () => {
-    const nome = localStorage.getItem("ag:nome") || "desconhecido";
+    const nome = sessionStorage.getItem("ag:nome") || "desconhecido";
     await db.collection("solicitacoes_reembolso").add({
       usuario: nome,
       falta:   parseFloat(falta),
