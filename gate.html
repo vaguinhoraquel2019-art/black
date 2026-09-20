@@ -338,6 +338,32 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+
+<!-- Tela sem key -->
+<div id="tela-sem-key">
+  <div class="sem-key-card">
+    <div class="sem-key-titulo">🔑 Você precisa de uma Key</div>
+    <div class="sem-key-nome" id="sem-key-usuario"></div>
+    <div class="sem-key-texto">
+      Para acessar o site, você precisa de uma key.<br>
+      Escolha um plano, faça o pix e aguarde a liberação.
+    </div>
+    <a class="btn-pague-key" href="pix/" target="_blank">PAGUE AQUI</a>
+    <div class="sem-key-ou">— ou se já tem uma key —</div>
+    <button class="btn-ja-tenho-key" id="btn-mostrar-key">Já tenho uma Key</button>
+    <div id="form-key-manual" style="display:none;flex-direction:column;gap:0.5rem;">
+      <input class="input-key-manual" type="text" id="input-key-manual" placeholder="XXXX-XXXX-XXXX">
+      <button class="btn-principal" id="btn-ativar-key">Ativar Key</button>
+    </div>
+    <p id="erro-key" style="font-size:0.8rem;color:#c00;display:none;"></p>
+  </div>
+</div>
+
+<!-- Painel de mensagens do admin -->
+<div id="painel-msg">
+  <div class="msg-card" id="msg-card-conteudo"></div>
+</div>
+
 <script>
 firebase.initializeApp(FIREBASE_CONFIG);
 const db = firebase.firestore();
@@ -516,8 +542,8 @@ function mostraTelaSemKey(nome) {
 
 document.getElementById("btn-mostrar-key").addEventListener("click", () => {
   const form = document.getElementById("form-key-manual");
-  form.classList.toggle("hidden");
-  form.style.display = form.classList.contains("hidden") ? "none" : "flex";
+  const visivel = form.style.display === "flex";
+  form.style.display = visivel ? "none" : "flex";
 });
 
 document.getElementById("btn-ativar-key").addEventListener("click", async () => {
@@ -684,31 +710,6 @@ function mostraMsgInsuficiente(docId, falta, dias) {
   });
 }
 </script>
-
-<!-- Tela sem key -->
-<div id="tela-sem-key">
-  <div class="sem-key-card">
-    <div class="sem-key-titulo">🔑 Você precisa de uma Key</div>
-    <div class="sem-key-nome" id="sem-key-usuario"></div>
-    <div class="sem-key-texto">
-      Para acessar o site, você precisa de uma key.<br>
-      Escolha um plano, faça o pix e aguarde a liberação.
-    </div>
-    <a class="btn-pague-key" href="pix/" target="_blank">PAGUE AQUI</a>
-    <div class="sem-key-ou">— ou se já tem uma key —</div>
-    <button class="btn-ja-tenho-key" id="btn-mostrar-key">Já tenho uma Key</button>
-    <div id="form-key-manual" class="hidden" style="display:flex;flex-direction:column;gap:0.5rem;">
-      <input class="input-key-manual" type="text" id="input-key-manual" placeholder="XXXX-XXXX-XXXX">
-      <button class="btn-principal" id="btn-ativar-key">Ativar Key</button>
-    </div>
-    <p class="erro" id="erro-key" style="font-size:0.8rem;color:#c00;display:none;"></p>
-  </div>
-</div>
-
-<!-- Painel de mensagens do admin -->
-<div id="painel-msg">
-  <div class="msg-card" id="msg-card-conteudo"></div>
-</div>
 
 </body>
 </html>
